@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Festival — Assistant des Festivaliers</title>
+    <style>
+        :root {
+            --bg: #0c0815;
+            --bg-soft: #161029;
+            --panel: #1b1330;
+            --accent: #ff3d81;
+            --accent2: #7c4dff;
+            --accent3: #00e5c0;
+            --text: #f4f1ff;
+            --muted: #a79ec7;
+            --radius: 18px;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 80% -10%, rgba(124, 77, 255, .35), transparent 60%),
+                radial-gradient(900px 500px at 0% 100%, rgba(255, 61, 129, .25), transparent 55%),
+                var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 440px;
+            height: min(780px, 92vh);
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, rgba(27, 19, 48, .95), rgba(12, 8, 21, .95));
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 26px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            background: linear-gradient(90deg, rgba(255, 61, 129, .15), rgba(124, 77, 255, .15));
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 20px rgba(255, 61, 129, .45);
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        header h1 {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: .3px;
+        }
+
+        header .status {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent3);
+            box-shadow: 0 0 8px var(--accent3);
+        }
+
+        /* Chat */
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+        }
+
+        #chat::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .15);
+            border-radius: 3px;
+        }
+
+        .msg {
+            display: flex;
+            gap: 10px;
+            max-width: 88%;
+            animation: pop .25s ease both;
+        }
+
+        .msg.bot {
+            align-self: flex-start;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+        }
+
+        .msg.user .avatar {
+            background: linear-gradient(135deg, #2ea8ff, var(--accent3));
+        }
+
+        .bubble {
+            padding: 12px 15px;
+            border-radius: var(--radius);
+            font-size: 14.5px;
+            line-height: 1.55;
+            white-space: pre-line;
+        }
+
+        .bot .bubble {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-top-left-radius: 6px;
+        }
+
+        .user .bubble {
+            background: linear-gradient(135deg, var(--accent2), #a13dff);
+            border-top-right-radius: 6px;
+            box-shadow: 0 4px 16px rgba(124, 77, 255, .35);
+        }
+
+        .bubble b {
+            color: var(--accent3);
+        }
+
+        .typing {
+            display: inline-flex;
+            gap: 5px;
+            padding: 6px 2px;
+        }
+
+        .typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: blink 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        @keyframes blink {
+
+            0%,
+            60%,
+            100% {
+                opacity: .25;
+                transform: translateY(0);
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateY(-3px);
+            }
+        }
+
+        /* Quick replies */
+        #chips {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        #chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            flex-shrink: 0;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text);
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .14);
+            transition: .2s;
+        }
+
+        .chip:hover {
+            background: rgba(124, 77, 255, .25);
+            border-color: var(--accent2);
+        }
+
+        /* Input */
+        form {
+            display: flex;
+            gap: 10px;
+            padding: 14px 16px 18px;
+        }
+
+        input {
+            flex: 1;
+            padding: 13px 18px;
+            font-size: 14.5px;
+            color: var(--text);
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 999px;
+            outline: none;
+            transition: .2s;
+        }
+
+        input::placeholder {
+            color: #7d7399;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 61, 129, .15);
+        }
+
+        button.send {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: grid;
+            place-items: center;
+            transition: .2s;
+            box-shadow: 0 6px 20px rgba(255, 61, 129, .4);
+        }
+
+        button.send:hover {
+            transform: scale(1.06);
+        }
+
+        button.send:active {
+            transform: scale(.95);
+        }
+
+        button.send svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                </svg>
+            </div>
+            <div>
+                <h1>PULSAR · Assistant</h1>
+                <div class="status"><span class="dot"></span> En ligne — 24/7 pendant le festival</div>
+            </div>
+        </header>
+        <div id="chat"></div>
+        <div id="chips"></div>
+        <form id="form" autocomplete="off">
+            <input id="input" type="text" placeholder="Pose ta question…" />
+            <button class="send" type="submit" aria-label="Envoyer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" stroke="none" />
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const chat = document.getElementById("chat");
+        const form = document.getElementById("form");
+        const input = document.getElementById("input");
+        const chipsBox = document.getElementById("chips");
+
+        const FEST = {
+            name: "Pulsar Festival",
+            dates: "du 12 au 14 juin 2026",
+            lieu: "Parc des Étoiles, Bordeaux",
+            scene: "3 scènes : Nova, Eclipse et Supernova",
+            prix: "Pass 1 jour 69 € · Pass 3 jours 159 € (camping inclus)",
+        };
+
+        const RULES = [
+            {
+                k: [/\b(bonjour|salut|hello|hey|coucou|yo)\b/i],
+                a: () => `Hey ! Bienvenue au ${FEST.name} 🎶 Je suis l'assistant des festivaliers. Programme, billets, accès, sécurité… pose-moi ta question !`
+            },
+            {
+                k: [/\b(date|quand|jour)\b/i],
+                a: () => `Le festival a lieu ${FEST.dates} 🗓️ Les portes ouvrent chaque jour à 14h et les concerts finissent à 2h du matin.`
+            },
+            {
+                k: [/\b(ou|lieu|adresse|site|localis|carte)\b.*\b(c(est|est)|festival|se trouve|situe|ca se passe)/i, /\b adresse \b/i],
+                a: () => `Tout se déroule au ${FEST.lieu} 📍 Suivre le fléchage "Pulsar" depuis la sortie B du tram C, ou les navettes gratuites depuis la gare toutes les 20 min.`
+            },
+            {
+                k: [/\b(billet|pass|ticket|prix|tarif|co[ûu]t|acheter|payer)\b/i],
+                a: () => `🎟️ ${FEST.prix}\nAchat sur pulsar-festival.fr (CB, PayPal, 3x sans frais). Le bracelet est activé à l'entrée avec une pièce d'identité. Attention : les contrefaçons ne donnent pas accès au site !`
+            },
+            {
+                k: [/\b(programme|line ?up|lineup|artistes?|concerts?|sc[eè]ne|horaire|affiche)\b/i],
+                a: () => `🎵 Le programme complet est sur l'app et au point Info. ${FEST.scene}.\nVendredi : Electro de 18h à 2h (scène Supernova)\nSamedi : Rock & indie toute la journée (scène Nova)\nDimanche : Hip-hop et clôture firework à 23h 🎆`
+            },
+            {
+                k: [/\b(camping|dormir|nuit|tente)\b/i],
+                a: () => `⛺ Le camping est inclus dans le Pass 3 jours : douches chaudes, bornes de recharge, espace calme de 2h à 8h. Tentes et van (emplacement limité, sur réservation à l'entrée).`
+            },
+            {
+                k: [/\b(manger|boire|nourriture|food|resto|vegan|v[ée]g[ée]|gluten)\b/i],
+                a: () => `🍔 24 food-trucks : burgers, Poke bowls, vegan, sans gluten (étiquetés) et pâtisseries locales. Prix moyens : 8–14 € le plat, gourde d'eau potable gratuite sur tout le site.`
+            },
+            {
+                k: [/\b(buvette|alcool|bi[eè]re|boissons?)\b/i],
+                a: () => `🍺 Les buvettes servent de 14h à 1h. Payez en "Pulsar Cashless" (rechargez votre bracelet sur l'app pour éviter la queue). L'alcool est réservé aux +18 : pensez à votre pièce d'identité.`
+            },
+            {
+                k: [/\b(acces|aller|transport|tram|bus|navette|train|voiture|parking|garer)\b/i],
+                a: () => `🚍 Navettes gratuites toutes les 20 min depuis la gare. Tram C jusqu'à 1h du matin. Parking relais à 10 €/jour avec navette. Vélo : parcage sécurisé gratuit à l'entrée Est.`
+            },
+            {
+                k: [/\b(objet|interdit|sac|apporter|drogue|cigarette|cigarette electronique)\b/i],
+                a: () => `🚫 Interdits : bouteilles en verre, parapluies, drone, appareil pro, sticker de haine. ✅ Autorisés : gourde vide, casquette, crème solaire, e-cig. Fouille des sacs à l'entrée (max format A4 pour aller plus vite).`
+            },
+            {
+                k: [/\b(securite|secours|premiers? soins|m[ée]dical|urgence|perdu|objet trouv[ée]|enfants?|mineur)\b/i],
+                a: () => `🏥 Poste de secours ouvert 24/24 (bouton SOS dans l'app). Espace objets trouvés près de la sortie Ouest. Le festival est interdit aux -16 non accompagnés ; 16-17 ans : autorisation parentale à l'entrée.`
+            },
+            {
+                k: [/\b(meteo|temps|pleuvoir|pluit|chaud|soleil)\b/i],
+                a: () => `🌤️ Prévoyez crème solaire ET K-way, on est en juin ! En cas de forte chaleur : zones ombragées, brumisateurs et distribution d'eau gratuite. Le festival a lieu même sous la pluie.`
+            },
+            {
+                k: [/\b(merci|top|g[ée]nial|super|cool)\b/i],
+                a: () => `Avec plaisir ! 🙌 Bon festival, prends soin de toi et de tes potes. Une autre question ?`
+            },
+            {
+                k: [/\b(pulse|pulsar|festival)\b$/i],
+                a: () => `${FEST.name} — ${FEST.dates}, ${FEST.lieu}. 🎡 3 jours, 3 scènes, 60 artistes. Que veux-tu savoir : programme, billets, accès, camping ?`
+            },
+            {
+                k: [/\b(rgpd|donn[ée]es|privacy|confidentialit[ée])\b/i],
+                a: () => `Tes données ne sont utilisées que pour ton bracelet et les notifications du festival. Aucune revente à des tiers. Détails au point Info ou sur pulsar-festival.fr/confidentialite.`
+            },
+        ];
+
+        const FALLBACK = `Hmm, je n'ai pas tout saisi 😅 Essaie avec : "programme", "billets", "accès", "camping", "objets interdits" ou "premiers secours".`;
+        const CHIPS = ["📅 Dates & horaires", "🎵 Programme", "🎟️ Billets & tarifs", "🚌 Accès", "⛺ Camping", "🍔 Food & buvettes", "🚫 Objets interdits", "🏥 Sécurité & secours", "🌤️ Météo"];
+
+        function addMsg(who, html) {
+            const el = document.createElement("div");
+            el.className = "msg " + who;
+            const av = who === "bot"
+                ? `<div class="avatar">🎧</div>`
+                : `<div class="avatar">👤</div>`;
+            el.innerHTML = av + `<div class="bubble">${html}</div>`;
+            chat.appendChild(el);
+            chat.scrollTop = chat.scrollHeight;
+            return el;
+        }
+
+        function answer(q) {
+            for (const r of RULES) if (r.k.some(re => re.test(q))) return r.a();
+            return FALLBACK;
+        }
+
+        function botReply(q) {
+            const t = addMsg("bot", `<span class="typing"><span></span><span></span><span></span></span>`);
+            setTimeout(() => {
+                t.querySelector(".bubble").innerHTML = answer(q);
+                chat.scrollTop = chat.scrollHeight;
+            }, 600 + Math.random() * 500);
+        }
+
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const q = input.value.trim();
+            if (!q) return;
+            addMsg("user", q.replace(/</g, "&lt;"));
+            input.value = "";
+            botReply(q);
+        });
+
+        CHIPS.forEach(c => {
+            const b = document.createElement("button");
+            b.className = "chip";
+            b.textContent = c;
+            b.onclick = () => { addMsg("user", c.replace(/</g, "&lt;")); botReply(c); };
+            chipsBox.appendChild(b);
+        });
+
+        addMsg("bot", `Bienvenue au ${FEST.name} 🎶✨ Je réponds à toutes tes questions : programme, billets, accès, camping, sécurité… Clique sur une suggestion ou écris directement !`);
+    </script>
+</body>
+
+</html>

@@ -1,10 +1,3 @@
-# J1-02 ·  Premier prompt
-
-## Prompt : 
-En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour un festival de musique. Il doit s'addresser aux festivaliers. Fait un chatbot propre et moderne en respectant une DA de festival de musique. 
-
-## Le résultat : 
- ```html
 <!doctype html>
 <html lang="fr">
 
@@ -108,6 +101,26 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
             border-radius: 50%;
             background: var(--accent3);
             box-shadow: 0 0 8px var(--accent3);
+        }
+
+        .clear-btn {
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 999px;
+            padding: 7px 13px;
+            transition: .2s;
+            white-space: nowrap;
+        }
+
+        .clear-btn:hover {
+            color: var(--text);
+            background: rgba(255, 61, 129, .25);
+            border-color: var(--accent);
         }
 
         /* Chat */
@@ -293,6 +306,27 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
             box-shadow: 0 0 0 3px rgba(255, 61, 129, .15);
         }
 
+        input.shake {
+            animation: shake .3s ease;
+            border-color: var(--accent);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-6px);
+            }
+
+            75% {
+                transform: translateX(6px);
+            }
+        }
+
         button.send {
             width: 48px;
             height: 48px;
@@ -336,6 +370,7 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
                 <h1>PULSAR · Assistant</h1>
                 <div class="status"><span class="dot"></span> En ligne — 24/7 pendant le festival</div>
             </div>
+            <button class="clear-btn" id="clearBtn" type="button" title="Effacer la conversation">🗑️ Effacer</button>
         </header>
         <div id="chat"></div>
         <div id="chips"></div>
@@ -459,9 +494,15 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
         form.addEventListener("submit", e => {
             e.preventDefault();
             const q = input.value.trim();
-            if (!q) return;
-            addMsg("user", q.replace(/</g, "&lt;"));
+            if (!q) {
+                input.classList.remove("shake");
+                void input.offsetWidth; // relance l'animation si déjà présente
+                input.classList.add("shake");
+                input.focus();
+                return;
+            }
             input.value = "";
+            addMsg("user", q.replace(/</g, "&lt;"));
             botReply(q);
         });
 
@@ -473,71 +514,15 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
             chipsBox.appendChild(b);
         });
 
-        addMsg("bot", `Bienvenue au ${FEST.name} 🎶✨ Je réponds à toutes tes questions : programme, billets, accès, camping, sécurité… Clique sur une suggestion ou écris directement !`);
+        const WELCOME = `Bienvenue au ${FEST.name} 🎶✨ Je réponds à toutes tes questions : programme, billets, accès, camping, sécurité… Clique sur une suggestion ou écris directement !`;
+        addMsg("bot", WELCOME);
+
+        document.getElementById("clearBtn").addEventListener("click", () => {
+            chat.innerHTML = "";
+            addMsg("bot", WELCOME);
+            input.focus();
+        });
     </script>
 </body>
 
 </html>
- ```
-
-
- ## Observations : 
- 
- Le modèle d'IA de Mistral crée du code qui n'est pas toujours fonctionnel, il utilise les mêmes thèmes visuel. 
-
- # J1-03 Jusqu'à quand 
-
- ## Liste de contrôle de la première version : 
-
-✅ L'envoi fonctionne avec la touche Entrée ou le bouton flèche.
-✅ L'animation des 3 petits points (« typing ») s'affiche avant la réponse du bot.
-✅ Le bot répond avec les infos du festival (dates, billets, camping, etc.).
-✅ Le champ de saisie est vidé après l'envoi.
-✅ Le design sombre avec dégradés violet/rose est bien appliqué.
-
-## Modification 1 : Bouton "Effacer"
-- **Ce que j'ai demandé** : `Ajoute un bouton "Effacer la conversation" qui remet le chat à zéro. Redonne-moi le code HTML complet en un seul bloc.`
-- **Ce qui marche maintenant** : Un bouton « 🗑️ Effacer » apparaît dans le header et vide les messages pour réinitialiser le message d'accueil.
-- **Ce qui marchait avant et ne marche plus** : Aucune régression constatée.
-- **Ce que je n'avais pas vu, et comment je l'ai trouvé** : J'ai retesté la liste de contrôle complète (suggestions chips, envoi clavier, typing animation). Le header s'est un peu resserré avec le bouton mais l'alignement flexbox est resté intact.
-
-## Modification 2 : Refuser les messages vides
-- **Ce que j'ai demandé** : `Empêche l'envoi d'un message vide ou contenant uniquement des espaces. Redonne-moi le code HTML complet en un seul bloc.`
-- **Ce qui marche maintenant** : Impossible d'envoyer du vide ou uniquement des espaces ; une animation CSS visuelle (`shake`) secoue le champ de saisie pour prévenir l'utilisateur.
-- **Ce qui marchait avant et ne marche plus** : Aucune régression constatée.
-- **Ce que je n'avais pas vu, et comment je l'ai trouvé** : En testant l'envoi avec 3 espaces, le trim fonctionne bien (`q.trim()`) et le focus reste actif dans l'input sans recharger.
-
-## Modification 3 : Persistance localStorage
-- **Ce que j'ai demandé** : `Fais en sorte que la conversation soit sauvegardée dans le localStorage pour qu'elle reste affichée après avoir rechargé la page avec F5. Redonne-moi le code HTML complet en un seul bloc.`
-- **Ce qui marche maintenant** : La conversation persiste après un rechargement F5 grâce à la clé `pulsar-chat-history`. Le bouton Effacer vide à la fois l'écran et le stockage.
-- **Ce qui marchait avant et ne marche plus** : Aucune régression fonctionnelle constatée.
-- **Ce que je n'avais pas vu, et comment je l'ai trouvé** : En testant la relecture après F5, les messages précédents réapparaissent instantanément sans ré-exécuter l'animation de frappe (typing).
-
-## Chasse à l'angle mort (trouvé avec mon binôme)
-- **Mot très long sans espaces** (60 caractères `a...a`) : Le mot déborde visuellement car il manque `overflow-wrap: break-word` ou `word-break: break-all` sur la classe `.bubble`.
-- **Injection de code HTML** (`<b>gras</b>`) : Le script remplace `<` par `&lt;`, ce qui évite que le texte devienne gras, mais l'utilisation de `innerHTML` dans le code reste un risque de sécurité par rapport à un vrai `textContent`.
-- **Envois multiples rapides** : Cliquer très vite plusieurs fois sur les suggestions empile plusieurs bulles d'animation « typing » en même temps.
-
-## Deux phrases de conclusion
-1. Même si Mistral a réussi à intégrer chaque demande sans casser l'existant, sans notre liste de contrôle nous n'aurions pas pu avoir la certitude que les animations, les suggestions ou le responsive n'avaient pas régressé.
-2. La chasse à l'angle mort prouve que le code généré paraît parfait en surface mais dissimule des cas limites non gérés (débordement de texte long, sécurité XSS partielle via innerHTML) qu'une simple demande en langage naturel ne suffit pas à garantir. 
-
-# J1-04 · Même prompt, autre réponse
-
-## Prompt de référence (identique aux trois essais) :
-« En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour un festival de musique. Il doit s'adresser aux festivaliers. Fais un chatbot propre et moderne en respectant une DA de festival de musique. »
-
-*(Ce prompt a été relancé mot pour mot dans trois conversations neuves distinctes sur Mistral).*
-
-## Tableau des écarts :
-
-| Critère | Essai A (`nicolas-essai-A.html`) | Essai B (`nicolas-essai-B.html`) | Essai C (`nicolas-essai-C.html`) |
-|---|---|---|---|
-| **Structure du code** | 514 lignes. Page HTML unique, styles en `<head>`, scripts en bas de `<body>`. Police "Segoe UI". | 438 lignes. Page HTML unique, `<style>` dans `<head>`, `<script>` en fin de `<body>`. Police "Segoe UI". | 501 lignes. Page HTML unique, styles en `<head>`, scripts en bas de `<body>`. Utilise `async/await` et fonction `sleep()`. |
-| **Comportement à l'envoi** | Bot nommé « Bloom » (SonicBloom Festival). Système de score par mot-clé (`findAnswer`), horodatage (`.time`), rotation de fallbacks. | Bot nommé « SUNBLAST Assist ». Matching par dictionnaire `RULES` et `.includes()`, masque les suggestions (`chips`) pendant la frappe. | Bot nommé « SOLSTICE Festival ». Normalisation Unicode NFD des accents (`norm()`), score pondéré par la longueur des mots clés. |
-| **Ce qui manque** | Aucune mémoire `localStorage` (perte à F5), aucun bouton d'effacement, message vide ignoré silencieusement sans retour visuel. | Pas de `localStorage`, pas de bouton Effacer, pas de feedback d'erreur sur champ vide (simple `return` silencieux). | Pas de `localStorage`, pas de bouton Effacer, champ vide ignoré sans retour visuel ni secousse. |
-| **Ce qui diffère** | DA : néon violet/rose (`#8b5cf6`, `#ff2d95`), avatar console DJ 🎛️, ton dynamique. | DA : violet et orange/jaune chaud (`#ffb020`), logo casque 🎧, bouton flèche `➤`, bandeau multicolore. | DA : violet/rose/cyan, logo lettre « S » sur dégradé, point d'état vert pulsant en CSS (`@keyframes pulse`). |
-
-## Phrase de conclusion :
-Ces écarts nous autorisent à faire confiance au modèle pour produire rapidement une maquette visuelle séduisante et pertinente sur le thème, mais ils nous interdisent formellement de supposer que l'implémentation technique, les fonctionnalités de robustesse (gestion des erreurs, mémoire) ou l'algorithme sous-jacent seront stables et reproductibles d'une exécution à l'autre. 
-

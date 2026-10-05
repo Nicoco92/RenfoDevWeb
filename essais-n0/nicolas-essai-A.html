@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SonicBloom Festival – Assistant des festivaliers</title>
+    <style>
+        :root {
+            --bg: #0d0a1a;
+            --panel: #171129;
+            --panel-2: #1f1636;
+            --neon-pink: #ff2d95;
+            --neon-purple: #8b5cf6;
+            --neon-cyan: #22d3ee;
+            --neon-yellow: #ffd23f;
+            --text: #f3f0ff;
+            --muted: #a49ec2;
+            --radius: 18px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(900px 500px at 10% -10%, rgba(139, 92, 246, .35), transparent 60%),
+                radial-gradient(700px 500px at 100% 0%, rgba(255, 45, 149, .28), transparent 55%),
+                radial-gradient(800px 600px at 50% 110%, rgba(34, 211, 238, .20), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .chat-app {
+            width: 100%;
+            max-width: 480px;
+            height: min(760px, 92vh);
+            background: linear-gradient(160deg, var(--panel), var(--panel-2));
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .03) inset;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            background: linear-gradient(90deg, rgba(255, 45, 149, .18), rgba(139, 92, 246, .18));
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: conic-gradient(from 200deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan), var(--neon-pink));
+            display: grid;
+            place-items: center;
+            font-size: 22px;
+            box-shadow: 0 4px 20px rgba(255, 45, 149, .45);
+            flex-shrink: 0;
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-info h1 {
+            font-size: 17px;
+            letter-spacing: .5px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+
+        .header-info p {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #6ee7a8;
+        }
+
+        .status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6ee7a8;
+            box-shadow: 0 0 8px #6ee7a8;
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: .4;
+            }
+        }
+
+        /* Messages */
+        .chat-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 18px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-log::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-log::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .15);
+            border-radius: 3px;
+        }
+
+        .msg {
+            display: flex;
+            gap: 10px;
+            max-width: 86%;
+            animation: rise .25s ease;
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+        }
+
+        .msg.bot {
+            align-self: flex-start;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .msg.bot .avatar {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        }
+
+        .msg.user .avatar {
+            background: linear-gradient(135deg, #2dd4bf, var(--neon-cyan));
+        }
+
+        .bubble {
+            padding: 11px 14px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.55;
+            white-space: pre-line;
+        }
+
+        .msg.bot .bubble {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-top-left-radius: 6px;
+        }
+
+        .msg.user .bubble {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            border-top-right-radius: 6px;
+            box-shadow: 0 4px 16px rgba(255, 45, 149, .30);
+        }
+
+        .bubble b {
+            color: var(--neon-yellow);
+            font-weight: 600;
+        }
+
+        .time {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+            opacity: .8;
+        }
+
+        .msg.user .time {
+            text-align: right;
+        }
+
+        .typing .bubble {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 14px 16px;
+        }
+
+        .typing .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            animation: blink 1.2s infinite;
+        }
+
+        .typing .dot:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .typing .dot:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        @keyframes blink {
+
+            0%,
+            80%,
+            100% {
+                opacity: .25;
+            }
+
+            40% {
+                opacity: 1;
+            }
+        }
+
+        /* Quick replies */
+        .chips {
+            display: flex;
+            gap: 8px;
+            padding: 8px 18px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            flex-shrink: 0;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            border-radius: 999px;
+            color: var(--text);
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .14);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .chip:hover {
+            background: rgba(255, 45, 149, .25);
+            border-color: var(--neon-pink);
+            transform: translateY(-1px);
+        }
+
+        /* Input */
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 14px 16px 18px;
+            border-top: 1px solid rgba(255, 255, 255, .08);
+            background: rgba(0, 0, 0, .18);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 13px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .06);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .chat-input input::placeholder {
+            color: var(--muted);
+        }
+
+        .chat-input input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, .18);
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 4px 18px rgba(255, 45, 149, .45);
+            transition: transform .15s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .send-btn:active {
+            transform: scale(.95);
+        }
+
+        .banner {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            padding: 0 20px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="chat-app" aria-label="Assistant du festival SonicBloom">
+        <header class="chat-header">
+            <div class="logo">🎛️</div>
+            <div class="header-info">
+                <h1>SONICBLOOM ASSISTANT</h1>
+                <p><span class="status">En ligne</span> · 24/7 pendant le festival</p>
+            </div>
+        </header>
+
+        <section class="chat-log" id="chatLog"></section>
+
+        <div class="chips" id="chips"></div>
+
+        <form class="chat-input" id="chatForm" autocomplete="off">
+            <input id="chatInput" type="text" placeholder="Pose ta question au festival… ✨" aria-label="Ton message" />
+            <button class="send-btn" type="submit" aria-label="Envoyer">➤</button>
+        </form>
+        <p class="banner">SonicBloom Festival · 14–17 août · Parc des Étangs, Lyon 🎶</p>
+    </main>
+
+    <script>
+        const log = document.getElementById("chatLog");
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("chatInput");
+        const chips = document.getElementById("chips");
+
+        const now = () => new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+        // Base de connaissances du festival
+        const rules = [
+            {
+                k: ["billet", "ticket", "pass", "place", "prix", "tarif", "acheter", "vente"],
+                a: "🎫 Les billets sont dispo sur <b>sonicbloom.fr/billetterie</b> :\n• Pass 1 jour : <b>79 €</b>\n• Pass 4 jours : <b>219 €</b> (jusqu’au 30 juin, puis 259 €)\n• Pass VIP : <b>449 €</b> avec zones dédiées & backstage\nMoins de 12 ans : gratuit accompagné d’un adulte 😉"
+            },
+            {
+                k: ["horaire", "heure", "ouverture", "ouvre", "fermeture", "commence", "fin"],
+                a: "🕒 Les portes ouvrent chaque jour de <b>12h à 2h</b>.\nLe premier concert démarre à 13h30, et la Main Stage s’éteint vers 1h du mat’. Les afters continuent jusqu’à 2h dans la zone Club ! 🌙"
+            },
+            {
+                k: ["ligneup", "line-up", "line up", "programmation", "artiste", "concert", "scene", "scène", "programm", "joue"],
+                a: "🎤 Le line-up 2026 est explosive :\n• <b>Vendredi</b> : Phoenix, Justice, Charlotte de Witte\n• <b>Samedi</b> : Aya Nakamura, Dj Snake, Fred again..\n• <b>Dimanche</b> : Angèle, Kraftklub, Martin Garrix\nRetrouve les horaires par scène dans l’app SonicBloom ou demande « planning Main Stage » 📅"
+            },
+            {
+                k: ["main stage", "planning", "planning main"],
+                a: "📅 <b>Planning Main Stage</b> (horaires indicatifs) :\n13h30 – Warm-up DJ\n16h00 – Premier concert\n19h30 – Tête d’affiche 1\n22h30 – Headliner 🎆\nLe planning complet est dans l’app, et affiché à chaque entrée de scène !"
+            },
+            {
+                k: ["carte", "plan", "acces", "accès", "aller", "venir", "transport", "bus", "train", "voiture", "parking", "tram"],
+                a: "🗺️ Le festival a lieu au <b>Parc des Étangs, Lyon</b>.\n• <b>Tram</b> T1 arrêt « Étangs » (5 min à pied)\n• <b>Navettes gratuites</b> depuis Part-Dieu toutes les 15 min dès 11h\n• <b>Parking</b> relais P3 avec navette : 10 €/jour\n🚲 Un parc vélos sécurisé gratuit est disponible à l’entrée Est !"
+            },
+            {
+                k: ["hebergement", "hébergement", "camping", "dormir", "hotel", "hôtel", "loger", "tente", "glamping"],
+                a: "🏕️ Pour dormir sur place :\n• <b>Camping festivalier</b> : 15 €/nuit, douches chaudes & recharge USB incluses\n• <b>Glamping</b> : tentes déjà montées, lits faits, à partir de 120 €/nuit\n• Hôtels partenaires : -15 % avec le code <b>SONIC2026</b>\nLe camping ouvre la veille du festival à 14h ! 🎪"
+            },
+            {
+                k: ["interdit", "autorise", "autorisé", "apporter", "sac", "bagage", "objets", "couteau", "alcool", "cigarette"],
+                a: "🎒 À savoir sur place :\n✅ Autorisé : petite gourde vide, crème solaire, poncho, chargeur\n❌ Interdit : bouteilles en verre, alcool, parapluie, drone, objets tranchants\nLes sacs sont fouillés à l’entrée. Consignes à bagages disponibles près de l’entrée Nord (3 €) 🎒"
+            },
+            {
+                k: ["manger", "boire", "food", "resto", "restaurant", "vegetarien", "végétarien", "vegan", "gluten", "stand"],
+                a: "🍕 Côté food, on est gâtés : plus de <b>30 stands</b> (burgers artisanaux, poké bowls, tacos, crêpes…).\nUne zone 100% <b>vegan/végé</b> et des options <b>sans gluten</b> sont à la Food Valley.\n💦 Points d’eau gratuits partout : pense à ta gourde ! 🥤"
+            },
+            {
+                k: ["handicap", "pmr", "accessibilite", "accessibilité", "fauteuil", "moteur", "auditif", "malentendant"],
+                a: "♿ Le site est entièrement accessible : plateformes PMR devant chaque scène, sanitaires adaptés, circuits guidés au sol et boucle magnétique sur la Main Stage.\nAccompagnateur : entrée gratuite. Écris à <b>accessibilite@sonicbloom.fr</b> pour préparer ton arrivée 💜"
+            },
+            {
+                k: ["objet", "perdu", "trouve", "trouvé", "perdu", "portefeuille", "telephone", "téléphone"],
+                a: "🔎 Objets trouvés : le stand est situé près de l’entrée principale, ouvert de 12h à 3h.\nTu peux aussi écrire à <b>perdu@sonicbloom.fr</b> jusqu’à 30 jours après le festival. On rend plein de trucs chaque année 🙏"
+            },
+            {
+                k: ["meteo", "météo", "pluie", "soleil", "chaleur", "froid", "temps"],
+                a: "☀️ Prépare-toi pour tout : le festival a lieu qu’il pleuve ou qu’il brille !\nPrévois crème solaire, chapeau et un poncho. En cas de forte chaleur : brumisateurs, zones d’ombre et eau gratuite partout 🌦️"
+            },
+            {
+                k: ["premiere", "première", " Premiere fois", "debutant", "débutant", "conseil", "astuce", "tips", "preparer", "préparer"],
+                a: "✨ Top conseils de festivalier aguerri :\n1. Arrive tôt pour éviter la foule\n2. Recharge ton téléphone aux stations gratuites\n3. Fixe un point de rendez-vous avec tes potes (le réseau sature !)\n4. Garde ton code QR billet en capture d’écran\n5. Des hydratation breaks > les folles nuits 💧"
+            },
+            {
+                k: ["securite", "sécurité", "secours", "urgence", "medic", "sos", "danger", "aide", "incendie", "bless"],
+                a: "🚨 <b>Sécurité d’abord !</b>\nPostes de secours sur chaque zone (drapeaux verts) et patrouilles 24/7.\nNuméro de la sécurité du festival : <b>04 78 00 00 00</b>\nEn cas d’urgence grave : <b>112</b>.\nRepère le drapeau vert le plus proche dès ton arrivée 💚"
+            },
+            {
+                k: ["benevole", "bénévole", "travailler", "job", "staff", "volontaire"],
+                a: "🤝 Envie de rejoindre la crew ? Les bénévoles courent après un pass 4 jours gratuit + repas & t-shirt :\nCandidatures sur <b>sonicbloom.fr/benevoles</b> avant le 15 juin. On t’attend ! 🎉"
+            },
+            {
+                k: ["merci", "top", "cool", "genial", "génial", "super", "nickel"],
+                a: "Avec plaisir ! 🎊 Passe un excellent festival et n’hésite pas si t’as d’autres questions. Reste hydraté(e) et fais-toi plaisir 💜"
+            }
+        ];
+
+        const fallbacks = [
+            "Hmm, je n’ai pas la réponse exacte… 🤔 Essaie avec un mot-clé comme <b>billets</b>, <b>line-up</b>, <b>accès</b> ou <b>camping</b>. Sinon, l’équipe info est à l’entrée principale de 10h à minuit !",
+            "Je ne suis pas sûr(e) d’avoir compris 😅 Tu peux reformuler ? Je gère les billets, la programmation, les transports, la food, le camping, l’accessibilité… 🎪",
+            "Question interdimensionnelle detected 👽 Essaye plutôt : horaires, objets perdus, sécurité, météo ou conseils de première fois !"
+        ];
+        let fallbackIdx = 0;
+
+        const starters = ["🎫 Billets", "🎤 Line-up", "🚊 Accès & transports", "🏕️ Camping", "🍕 Food & boissons", "♿ Accessibilité", "🎒 Objets interdits", "✨ Conseils 1ère fois"];
+
+        function findAnswer(text) {
+            const t = " " + text.toLowerCase() + " ";
+            let best = null, bestScore = 0;
+            for (const r of rules) {
+                const score = r.k.reduce((s, k) => s + (t.includes(k) ? 1 : 0), 0);
+                if (score > bestScore) { bestScore = score; best = r; }
+            }
+            return best ? best.a : null;
+        }
+
+        function addMsg(role, html) {
+            const wrap = document.createElement("div");
+            wrap.className = "msg " + role;
+            wrap.innerHTML = (role === "bot"
+                ? '<div class="avatar">🎛️</div>'
+                : '<div class="avatar">🙋</div>')
+                + '<div><div class="bubble">' + html + '</div><div class="time">' + now() + "</div></div>";
+            log.appendChild(wrap);
+            log.scrollTop = log.scrollHeight;
+            return wrap;
+        }
+
+        function botReply(text, delay) {
+            const typing = document.createElement("div");
+            typing.className = "msg bot typing";
+            typing.innerHTML = '<div class="avatar">🎛️</div><div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+            log.appendChild(typing);
+            log.scrollTop = log.scrollHeight;
+            setTimeout(() => {
+                typing.remove();
+                addMsg("bot", text);
+            }, delay || 900);
+        }
+
+        function send(text) {
+            if (!text.trim()) return;
+            addMsg("user", text.replace(/</g, "&lt;"));
+            const answer = findAnswer(text);
+            if (answer) botReply(answer);
+            else { botReply(fallbacks[fallbackIdx % fallbacks.length]); fallbackIdx++; }
+            input.value = "";
+        }
+
+        form.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+
+        chips.innerHTML = "";
+        starters.forEach((s) => {
+            const b = document.createElement("button");
+            b.className = "chip";
+            b.type = "button";
+            b.textContent = s;
+            b.addEventListener("click", () => send(s.replace(/^[^\s]+\s/, "")));
+            chips.appendChild(b);
+        });
+
+        botReply("Salut festivalier·ère ! 🎡 Je suis <b>Bloom</b>, ton assistant du SonicBloom Festival 2026.\nJe réponds à toutes tes questions : billets 🎫, line-up 🎤, accès 🚊, camping 🏕️, food 🍕…\nTape ta question ou choisis un sujet ci-dessous !", 600);
+    </script>
+</body>
+
+</html>
