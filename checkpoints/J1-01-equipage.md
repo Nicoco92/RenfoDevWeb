@@ -30,9 +30,9 @@ Aujourd'hui, vous n'écrirez pas le code à la main. D'abord un chat web sans ou
 7. **Échangez les rôles.** L'autre personne relance le serveur à son tour (Ctrl+C puis `npm start`). Notez dans le carnet la commande, le dossier et le résultat.
 
 ✅ **Preuve** — cochez, ou montrez au formateur
-- [ ] La page de départ s'affiche à `http://127.0.0.1:3000` avec son statut de départ, sur le poste où le binôme travaille (un seul atelier par binôme).
-- [ ] Les rôles, le thème provisoire, les trois questions et les deux valeurs du cahier personnel sont dans le [carnet](../carnet.md).
-- [ ] Vous citez sans notes les trois fichiers de la page (`index.html`, `styles.css`, `app.js`) et vous montrez `main`, `h1` et `p#status` dans `index.html`.
+- [x] La page de départ s'affiche à `http://127.0.0.1:3000` avec son statut de départ, sur le poste où le binôme travaille (un seul atelier par binôme).
+- [x] Les rôles, le thème provisoire, les trois questions et les deux valeurs du cahier personnel sont dans le [carnet](../carnet.md).
+- [x] Vous citez sans notes les trois fichiers de la page (`index.html`, `styles.css`, `app.js`) et vous montrez `main`, `h1` et `p#status` dans `index.html`.
 
 
 🆘 **Si ça bloque**

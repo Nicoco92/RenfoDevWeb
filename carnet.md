@@ -12,7 +12,7 @@ Trois questions auxquelles l'assistant pourrait répondre :
 2.Quelle est la programmation des artistes ? 
 3.Comment se rendre au festival ? 
 
-Rôles de départ et moments d'échange :
+Rôles de départ et moments d'échange : Yaël Coëffier, Nicolas Contreras Tibocha vérifie et prédit. Échange toutes les 20 minutes.
 
 ## Cahier personnel (remis par le formateur en J1-01)
 
@@ -24,11 +24,10 @@ Cahier personnel : [Nicolas Contreras Tibocha](Nicolas-Contreras-rapport.md) et 
 - Second mot reconnu : programmation
 
 ## Commandes essayées
-m
 Notez le dossier de lancement, la commande et sa sortie exacte, surtout quand un outil a bloqué.
 
-- Dossier :
-- Commande et résultat :
+- Dossier : atelier
+- Commande et résultat : cd atelier && npm start -> Cap Web prêt sur http://127.0.0.1:3000/
 
 Pour chaque checkpoint : cochez la case quand toute la preuve de la fiche est réunie, collez la preuve (texte, commande ou phrase), puis notez ce que vous avez prédit, essayé, observé, et une difficulté qui reste.
 
@@ -36,11 +35,12 @@ Pour chaque checkpoint : cochez la case quand toute la preuve de la fiche est r�
 
 ### J1-01 · 🧭 Équipage — [fiche](checkpoints/J1-01-equipage.md)
 
-- [ ] Validé
-- Preuve (page de départ affichée sur votre poste, cahier personnel recopié ci-dessus) :
+- [x] Validé
+- Preuve (page de départ affichée sur votre poste, cahier personnel recopié ci-dessus) : Page affichée à l'adresse http://127.0.0.1:3000/ avec le statut initial. Cahier personnel bien renseigné ci-dessus (N = 200, mots reconnus : festival, programmation).
 - Le `p#status` est-il vide dans le HTML ? Qui écrit sa phrase ?
-- Décision prise ensemble :
-- Difficulté qui reste :
+Le `p#status` est bien vide dans le code source de `index.html`. C'est le script client `public/js/app.js` qui écrit dynamiquement la phrase dans le navigateur via `document.querySelector('#status').textContent = 'Votre point de départ est prêt.';`.
+- Décision prise ensemble : Choix du sujet « Festival de Musique » et rédaction des trois questions sans le mot « envoyer ».
+- Difficulté qui reste : Aucune.
 
 ### J1-02 · 💬 Premier prompt — [fiche](checkpoints/J1-02-premier-prompt.md)
 
