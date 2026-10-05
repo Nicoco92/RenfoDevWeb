@@ -132,6 +132,19 @@
       }
       button.send:hover { transform: scale(1.08); }
       .hint { text-align: center; font-size: .72rem; color: var(--muted); padding-bottom: 10px; }
+      #clear {
+        margin-left: auto;
+        border: 1px solid #4a4190;
+        background: transparent;
+        color: var(--muted);
+        font-size: .75rem;
+        padding: 7px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: .2s;
+        font-family: inherit;
+      }
+      #clear:hover { background: #ff4d8d33; border-color: var(--accent); color: var(--text); }
     </style>
   </head>
   <body>
@@ -142,6 +155,7 @@
           <h1>SonoRive&nbsp;Bot</h1>
           <div class="status"><span class="dot"></span> En ligne – Festival SonoRive 2026</div>
         </div>
+        <button id="clear" title="Vider la conversation">🗑️ Effacer</button>
       </header>
       <div id="chat"></div>
       <div id="quick"></div>
@@ -265,7 +279,16 @@
         quick.appendChild(b);
       });
 
-      addMsg("Hey ! 👋 Je suis le bot du " + FEST.nom + " " + FEST.dates + " !\nDemande-moi tout : billets, prog, accès, camping… Tape « aide » pour voir tout ce que je sais.", "bot");
+      function welcome() {
+        addMsg("Hey ! 👋 Je suis le bot du " + FEST.nom + " " + FEST.dates + " !\nDemande-moi tout : billets, prog, accès, camping… Tape « aide » pour voir tout ce que je sais.", "bot");
+      }
+
+      document.getElementById("clear").addEventListener("click", () => {
+        chat.innerHTML = "";
+        welcome();
+      });
+
+      welcome();
     </script>
   </body>
 </html>
