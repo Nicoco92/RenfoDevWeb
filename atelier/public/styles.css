@@ -1,2 +1,6 @@
 body { font-family: system-ui, sans-serif; margin: 2rem; color: #15213a; background: white; }
 main { max-width: 48rem; margin-inline: auto; }
+form { margin-top: 1rem; }
+label { display: block; margin-bottom: 0.5rem; }
+textarea { display: block; width: 100%; min-height: 5rem; }
+button { margin-top: 0.5rem; }
