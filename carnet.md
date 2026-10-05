@@ -3,14 +3,14 @@
 
 Un carnet par binôme, rempli au fil de l'eau avec vos propres mots. Une phrase honnête (« j'ai essayé X, j'ai vu Y, je ne comprends pas pourquoi ») vaut mieux qu'une phrase parfaite recopiée. Aucune donnée personnelle, aucune clé ni jeton, ni l'adresse complète que `dsh web` affiche (elle contient un jeton). C'est aussi votre journal de décisions (astuce 13) : ce que vous avez demandé, ce qui a cassé, ce que vous avez refusé, et pourquoi.
 
-Binôme :
+Binôme : Nicolas Contreras Tibocha et Yaël Coëffier
 
-Thème provisoire et public visé :
+Thème provisoire et public visé : Festival de Musique.
 
 Trois questions auxquelles l'assistant pourrait répondre :
-1.
-2.
-3.
+1.Peux-tu me présenter le festival ? 
+2.Quelle est la programmation des artistes ? 
+3.Comment se rendre au festival ? 
 
 Rôles de départ et moments d'échange :
 
@@ -18,12 +18,13 @@ Rôles de départ et moments d'échange :
 
 Recopiez les valeurs telles que le formateur vous les a remises. Ne les changez pas, ne les échangez pas avec un autre binôme.
 
-- Limite de caractères d'un message (le nombre N) :
-- Premier mot reconnu, en plus de « salut », « aide » et « test » :
-- Second mot reconnu :
+Cahier personnel : [Nicolas Contreras Tibocha](Nicolas-Contreras-rapport.md) et [Yaël Coëffier](Yaël-Coëffier-rapport.md)
+- Limite de caractères d'un message (le nombre N) : 200
+- Premier mot reconnu, en plus de « salut », « aide » et « test » : festival
+- Second mot reconnu : programmation
 
 ## Commandes essayées
-
+m
 Notez le dossier de lancement, la commande et sa sortie exacte, surtout quand un outil a bloqué.
 
 - Dossier :
