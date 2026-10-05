@@ -541,3 +541,51 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
 ## Phrase de conclusion :
 Ces écarts nous autorisent à faire confiance au modèle pour produire rapidement une maquette visuelle séduisante et pertinente sur le thème, mais ils nous interdisent formellement de supposer que l'implémentation technique, les fonctionnalités de robustesse (gestion des erreurs, mémoire) ou l'algorithme sous-jacent seront stables et reproductibles d'une exécution à l'autre. 
 
+# J1-05 · dsh en main
+
+## Preuve :
+- `dsh --version` : `0.1.5-rc.2`
+- Espace de travail : `/Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier`
+- Modèle sélectionné : `capweb-ia`
+- Mode de permission : `Read Only` (vérifié avec `/permission`)
+- `git status -- atelier` : « nothing to commit, working tree clean » (aucun fichier modifié)
+- Clé API : stockée uniquement dans `~/dsh-capweb/.credentials.yaml` (chmod 600), aucune fuite dans le projet.
+
+## Consigne envoyée :
+> « Liste les fichiers de ce dossier et dis ce que fait chacun. Donne le chemin de chaque fichier. Si tu ne sais pas ce que fait un fichier, écris « je ne sais pas ». N'écris rien et ne modifie rien. »
+
+## Réponse de l'agent :
+```text
+Voici les fichiers du dossier atelier — lecture seule, rien n'a été modifié :
+Dossier : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/README.md Ce que fait ce fichier : documentation de l'atelier J1 — explique comment démarrer (npm start), vérifier (npm test, npm run verify), et le rôle des checkpoints.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/package.json Ce que fait ce fichier : manifeste npm du projet — déclare le nom, le type module ES, Node >=24.20, les scripts (start, test, lint, test:browser, verify) et les devDependencies (eslint, playwright, axe-core).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/package-lock.json Ce que fait ce fichier : verrouille les versions exactes des dépendances npm pour une installation reproductible (npm ci).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/.gitignore Ce que fait ce fichier : liste les dossiers ignorés par Git (node_modules/, dist/, preuves/, test-results/, playwright-report/, coverage/).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/eslint.config.js Ce que fait ce fichier : configuration ESLint (flat config) — définit les règles pédagogiques (no-unused-vars, eqeqeq, no-var, prefer-const) et les globales navigateur vs Node selon le dossier.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/playwright.config.js Ce que fait ce fichier : configuration Playwright — test Chromium headless sur http://127.0.0.1:4173/, dossier de tests ./browser, démarre automatiquement le serveur via node server/start.js.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/server/app.js Ce que fait ce fichier : crée le serveur HTTP (createApp) — sert uniquement la liste explicite /, /index.html, /styles.css, /js/app.js+ /version.json, gère GET/HEAD, 404/405, types MIME, sans fuite de fichiers privés.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/server/start.js Ce que fait ce fichier : point d'entrée du serveur — fixe le dossier public, valide le PORT (défaut 3000), écoute sur 127.0.0.1, gère l'arrêt propre sur SIGINT/SIGTERM.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/index.html Ce que fait ce fichier : page d'accueil HTML — structure avec <main>, titre Cap Web, paragraphe, zone #status, charge styles.css et js/app.js.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/styles.css Ce que fait ce fichier : feuille de style minimale — police system-ui, marges, couleur, centrage du main.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/js/app.js Ce que fait ce fichier : script navigateur — affiche le texte « Votre point de départ est prêt. » dans l'élément #status.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/tests/server.test.js Ce que fait ce fichier : 9 tests serveur Node (node:test) — vérifie GET/HEAD, MIME, /version.json, 404, 405, et non-divulgation des chemins privés et traversals.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/browser/depart.spec.js Ce que fait ce fichier : 1 test navigateur Playwright — vérifie que la page charge le titre Cap Web, que le status existe, et qu'il n'y a aucune erreur JavaScript.
+```
+
+## Vérification de l'agent :
+- `README.md` : **Existe**, description **juste** (documente l'atelier J1, le lancement et les tests).
+- `package.json` : **Existe**, description **juste** (manifeste npm, configuration ES module, scripts et outils dev).
+- `package-lock.json` : **Existe**, description **juste** (arbre des dépendances figé).
+- `.gitignore` : **Existe**, description **juste** (liste des exclusions de suivi git).
+- `eslint.config.js` : **Existe**, description **juste** (règles de linting JavaScript modernes).
+- `playwright.config.js` : **Existe**, description **juste** (configuration des tests E2E navigateur).
+- `server/app.js` : **Existe**, description **juste** (logique du serveur HTTP et filtrage strict des routes).
+- `server/start.js` : **Existe**, description **juste** (script exécutable lançant le serveur HTTP sur le port 3000).
+- `public/index.html` : **Existe**, description **juste** (page d'accueil sémantique avec main et p#status).
+- `public/styles.css` : **Existe**, description **juste** (feuille de styles CSS sobre).
+- `public/js/app.js` : **Existe**, description **juste** (script client écrivant le statut au chargement).
+- `tests/server.test.js` : **Existe**, description **juste** (tests Node.js du serveur).
+- `browser/depart.spec.js` : **Existe**, description **juste** (test Playwright du rendu de départ).
+- **Fichier non cité** : `carnet.md` (ou `cap-web-j1/README.md`) car situé dans le dossier parent racine, ce qui prouve que l'agent est bien confiné dans son espace de travail `atelier`. 
+

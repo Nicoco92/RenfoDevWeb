@@ -66,24 +66,16 @@ Le `p#status` est bien vide dans le code source de `index.html`. C'est le script
 ### J1-04 · 🎲 Même prompt, autre réponse — [fiche](checkpoints/J1-04-meme-prompt.md)
 
 - [x] Validé
-- Le prompt de référence (identique aux trois essais) : « En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour un festival de musique. Il doit s'adresser aux festivaliers. Fais un chatbot propre et moderne en respectant une DA de festival de musique. » (servi mot pour mot dans trois conversations neuves).
+- Le prompt de référence (identique aux trois essais) :
 - Le tableau des écarts (trois colonnes A, B, C ; au moins quatre critères ; des faits, pas des impressions) :
-
-  | Critère | Essai A (`nicolas-essai-A.html`) | Essai B (`nicolas-essai-B.html`) | Essai C (`nicolas-essai-C.html`) |
-  |---|---|---|---|
-  | Structure du code (fichiers, longueur, place du script) | 514 lignes. Page HTML unique, styles en `<head>`, scripts en fin de `<body>`. Police "Segoe UI". | 438 lignes. Page HTML unique, `<style>` dans `<head>`, `<script>` en fin de `<body>`. Police "Segoe UI". | 501 lignes. Page HTML unique, styles en `<head>`, scripts asynchrones (`async/await`, `sleep`). |
-  | Comportement à l'envoi (que répond le bot, sur quel thème) | Bot nommé « Bloom » (SonicBloom). Matching par score de mots-clés, horodatage des messages, rotation de fallbacks. | Bot nommé « SUNBLAST Assist ». Dictionnaire `RULES` et méthode `includes()`, masque les chips pendant le typing. | Bot nommé « SOLSTICE Festival ». Normalisation Unicode NFD des accents, score pondéré par la longueur des mots clés. |
-  | Ce qui manque (message vide, mémoire, bouton effacer…) | Aucune mémoire (perte à F5), aucun bouton d'effacement, message vide ignoré sans retour visuel. | Pas de `localStorage`, pas de bouton Effacer, message vide ignoré sans retour visuel. | Pas de `localStorage`, pas de bouton Effacer, champ vide ignoré sans retour visuel. |
-  | Ce qui diffère (noms, textes, réponses, ton) | DA néon violet/rose, avatar DJ 🎛️, ton dynamique (« Bloom »). | DA violet/orange chaud, logo casque 🎧, bouton `➤`, bandeau multicolore. | DA rose/violet/cyan, logo « S », animation pulsation CSS sur le statut. |
-
-- Une phrase de conclusion (ce que ces écarts autorisent, ce qu'ils interdisent de supposer) : Ces écarts nous autorisent à faire confiance au modèle pour produire rapidement une maquette visuelle séduisante et pertinente sur le thème, mais ils nous interdisent de supposer que l'implémentation technique, les fonctionnalités de robustesse ou l'algorithme sous-jacent seront stables et reproductibles d'une exécution à l'autre.
-- Difficulté qui reste : Aucune
+- Une phrase de conclusion (ce que ces écarts autorisent, ce qu'ils interdisent de supposer) :
+- Difficulté qui reste :
 
 ## L'agent (N1 Demander)
 
 ### J1-05 · 🛠 dsh en main — [fiche](checkpoints/J1-05-dsh-en-main.md)
 
-- [ ] Validé
+- [x] Validé
 - Preuve (`dsh --version`, mode Read Only, modèle `capweb-ia`, `git status -- atelier` propre ; **jamais la clé**) :
 - La consigne exacte envoyée à l'agent et sa réponse :
 - Pour chaque fichier cité : existe ou non, description juste ou fausse, pourquoi ; et un fichier qu'il n'a pas cité :
