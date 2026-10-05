@@ -587,5 +587,73 @@ Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/browser/dep
 - `public/js/app.js` : **Existe**, description **juste** (script client écrivant le statut au chargement).
 - `tests/server.test.js` : **Existe**, description **juste** (tests Node.js du serveur).
 - `browser/depart.spec.js` : **Existe**, description **juste** (test Playwright du rendu de départ).
-- **Fichier non cité** : `carnet.md` (ou `cap-web-j1/README.md`) car situé dans le dossier parent racine, ce qui prouve que l'agent est bien confiné dans son espace de travail `atelier`. 
+- **Fichier non cité** : `carnet.md` (ou `cap-web-j1/README.md`) car situé dans le dossier parent racine, ce qui prouve que l'agent est bien confiné dans son espace de travail `atelier`.
 
+# J1-06 · Anatomie d'un prompt
+
+## Essai 1 : Le prompt vague
+
+- **Prompt envoyé à l'agent** :
+  > « Écris la page de Cap Web : un formulaire, une liste de messages et un statut. »
+
+- **Ce que montre la page (3 lignes d'observation)** :
+  1. Un formulaire vertical avec un label « Votre message », un textarea multi-lignes (« Écrivez ici… ») et un bouton bleu standard « Envoyer ».
+  2. Une section titrée H2 « Messages » avec une liste à puces vide (`<ul id="messages">`).
+  3. Une ligne de statut affichant au départ « Votre point de départ est prêt. », puis réagissant aux soumissions de l'utilisateur.
+
+- **Fichiers modifiés (`git status -- atelier` et `git diff`)** :
+  - `atelier/public/index.html` (+13, -2) : structure HTML basique ajoutée avec form, textarea, bouton, liste et statut. Absence de la limite `maxlength="200"`.
+  - `atelier/public/styles.css` (+8, -1) : grille CSS élémentaire pour espacer formulaire, champs et liste.
+  - `atelier/public/js/app.js` (+22, -1) : gestionnaire d'événement complet codé d'office par l'agent (ajout dynamique de `<li>`, validation champ vide). L'agent a pris des initiatives non demandées.
+
+- **Vérification `npm test`** :
+  - 9 tests serveur passés avec succès (vert).
+
+## Essai 2 : Le prompt structuré (en six parties)
+
+- **Prompt envoyé à l'agent** :
+  ```text
+  RÔLE : Tu es développeur web. Tu écris du HTML, du CSS et du JavaScript sans bibliothèque, pour des débutants.
+  TÂCHE : Écris le squelette de la page de « Cap Web », un assistant sur le Festival de Musique : un formulaire, une liste de messages, une ligne de statut.
+  CONTRAINTES :
+  - Modifie uniquement public/index.html, public/styles.css et public/js/app.js. Le serveur ne sert que ces trois fichiers : n'en crée aucun autre.
+  - Garde ces identifiants : form#chat-form, textarea#message, ul#messages, p#status.
+  - Le champ #message est limité à 200 caractères (maxlength).
+  - Le contenu de la page est dans un main. Un seul h1 (« Cap Web »), un label lié au champ, un bouton « Envoyer », p#status avec role="status", html lang="fr". Aucune bibliothèque, aucune adresse https://.
+  FORMAT DE SORTIE : d'abord la liste de tes hypothèses (cinq au plus), puis tu t'arrêtes. Après mon « ok », tu écris les trois fichiers, puis tu réponds par la liste des fichiers écrits.
+  EXEMPLES ET CONTRE-EXEMPLES : voulu : <button type="submit">Envoyer</button>. Refusé : <div onclick="envoyer()">Envoyer</div> (ce n'est pas un bouton) ; un fichier script.js à côté de app.js (le serveur répondrait 404).
+  CRITÈRE D'ARRÊT : app.js empêche seulement le rechargement de la page à l'envoi et écrit alors « Interface prête. » dans le statut ; il n'ajoute aucun message à la liste. Quand les trois fichiers sont écrits, tu t'arrêtes.
+  ```
+
+- **Hypothèses listées par l'agent (sans rien écrire)** :
+  1. `public/index.html` charge `styles.css` et `js/app.js` sans autre fichier ni bibliothèque.
+  2. Le `main` contient le `h1`, le `form#chat-form`, le `ul#messages` et le `p#status`.
+  3. Le formulaire contient un `label` lié à `textarea#message` (`maxlength` 200) et un `button type="submit"`.
+  4. `p#status` porte `role="status"` et `html lang="fr"`, sans aucune adresse `https://`.
+  5. `app.js` se limite à empêcher le rechargement à l'envoi et à écrire « Interface prête. » dans le statut.
+
+- **Ma validation** : « ok »
+
+- **Ce que montre la page (3 lignes d'observation)** :
+  1. Titre `Cap Web` avec sous-titre `Un assistant sur le Festival de Musique.` dans un `<main>`.
+  2. Formulaire propre avec champ `<textarea id="message" maxlength="200">` et un vrai `<button type="submit">Envoyer</button>`.
+  3. Une liste vide `<ul id="messages">` et une zone `<p id="status" role="status">` affichant « Interface prête. » lors du clic sur Envoyer sans rechargement de page.
+
+- **Fichiers modifiés (`git status -- atelier`)** :
+  - `atelier/public/index.html` (+11, -5) : structure sémantique exacte, respect des contraintes (`maxlength="200"`, IDs stricts).
+  - `atelier/public/styles.css` (+2, -0) : styles minimalistes d'espacement (`form`, `ul`).
+  - `atelier/public/js/app.js` (+7, -1) : gestionnaire d'événement respectant scrupuleusement le critère d'arrêt sans aucun ajout de message.
+
+- **Grille comparative** :
+
+| Critère | Prompt vague | Prompt structuré |
+|---|---|---|
+| La page s'affiche sans erreur (F12, onglet Console) | ✔ Aucun warning ni erreur JS | ✔ Parfait, console propre |
+| Formulaire, liste et statut sont là, avec les 4 identifiants | ✘ Présents mais manque la contrainte maxlength="200" du cahier | ✔ form#chat-form, textarea#message (maxlength 200), ul#messages, p#status |
+| Seuls les trois fichiers autorisés ont changé (`git status`) | ✔ Exactement index.html, styles.css et app.js | ✔ Exactement index.html, styles.css et app.js |
+| `npm test` reste vert | ✔ 9 tests passés | ✔ 9 tests passés |
+| Aucune bibliothèque, aucune adresse `https://` | ✔ 100% vanilla local | ✔ 100% vanilla local |
+| Vous savez expliquer chaque partie de la page en une phrase | ✘ Non, l'agent a improvisé la logique d'ajout dynamique et de validation | ✔ Oui, squelette minimaliste strict et maîtrisé |
+
+- **Phrase de conclusion** :
+  Entre les deux résultats, ce qui a le plus changé, c'est la maîtrise du périmètre et le respect strict du critère d'arrêt (aucun code superflu d'ajout de message), parce que la partie CRITÈRE D'ARRÊT de mon prompt disait « app.js empêche seulement le rechargement de la page à l'envoi et écrit alors "Interface prête." dans le statut ; il n'ajoute aucun message à la liste » et que CONTRAINTES imposait `maxlength="200"`.

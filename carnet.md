@@ -83,14 +83,51 @@ Le `p#status` est bien vide dans le code source de `index.html`. C'est le script
 
 ### J1-06 · 🧱 Anatomie d'un prompt — [fiche](checkpoints/J1-06-anatomie-dun-prompt.md)
 
-- [ ] Validé
-- Preuve (deux prompts, deux résultats, grille remplie, commit du squelette) :
+- [x] Validé
+- Preuve (deux prompts, deux résultats, grille remplie, commit du squelette) : Deux prompts envoyés à l'agent (`capweb-ia`), 5 hypothèses validées avant écriture, 3 fichiers modifiés dans `atelier/public/` (`index.html`, `styles.css`, `js/app.js`), `npm test` vert (9/9), commit créé `J1 : squelette de Cap Web (prompt structuré)`.
 - Prompt vague et ce que montre la page (trois lignes, fichiers touchés) :
+  - **Prompt vague envoyé** : « Écris la page de Cap Web : un formulaire, une liste de messages et un statut. »
+  - **Ce que montre la page (3 lignes)** :
+    1. Un formulaire vertical avec label « Votre message », textarea multi-lignes sans limite (« Écrivez ici… ») et bouton bleu « Envoyer ».
+    2. Une section titrée H2 « Messages » avec une liste à puces vide (`<ul>`).
+    3. Un statut affichant initialement « Votre point de départ est prêt. » et changeant à l'envoi.
+  - **Fichiers touchés** : `atelier/public/index.html` (+13, -2), `atelier/public/styles.css` (+8, -1), `atelier/public/js/app.js` (+22, -1). L'agent avait improvisé une logique complète d'ajout de balises `<li>` et de validation.
 - Prompt structuré, en six parties, tel qu'envoyé :
+
+```text
+RÔLE : Tu es développeur web. Tu écris du HTML, du CSS et du JavaScript sans bibliothèque, pour des débutants.
+TÂCHE : Écris le squelette de la page de « Cap Web », un assistant sur le Festival de Musique : un formulaire, une liste de messages, une ligne de statut.
+CONTRAINTES :
+- Modifie uniquement public/index.html, public/styles.css et public/js/app.js. Le serveur ne sert que ces trois fichiers : n'en crée aucun autre.
+- Garde ces identifiants : form#chat-form, textarea#message, ul#messages, p#status.
+- Le champ #message est limité à 200 caractères (maxlength).
+- Le contenu de la page est dans un main. Un seul h1 (« Cap Web »), un label lié au champ, un bouton « Envoyer », p#status avec role="status", html lang="fr". Aucune bibliothèque, aucune adresse https://.
+FORMAT DE SORTIE : d'abord la liste de tes hypothèses (cinq au plus), puis tu t'arrêtes. Après mon « ok », tu écris les trois fichiers, puis tu réponds par la liste des fichiers écrits.
+EXEMPLES ET CONTRE-EXEMPLES : voulu : <button type="submit">Envoyer</button>. Refusé : <div onclick="envoyer()">Envoyer</div> (ce n'est pas un bouton) ; un fichier script.js à côté de app.js (le serveur répondrait 404).
+CRITÈRE D'ARRÊT : app.js empêche seulement le rechargement de la page à l'envoi et écrit alors « Interface prête. » dans le statut ; il n'ajoute aucun message à la liste. Quand les trois fichiers sont écrits, tu t'arrêtes.
+```
+
 - Les hypothèses de l'agent, et ma réponse :
+  - **Hypothèses listées par l'agent (5 au plus)** :
+    1. `public/index.html` charge `styles.css` et `js/app.js` sans autre fichier ni bibliothèque.
+    2. Le `main` contient le `h1`, le `form#chat-form`, le `ul#messages` et le `p#status`.
+    3. Le formulaire contient un `label` lié à `textarea#message` (`maxlength` 200) et un `button type="submit"`.
+    4. `p#status` porte `role="status"` et `html lang="fr"`, sans aucune adresse `https://`.
+    5. `app.js` se limite à empêcher le rechargement à l'envoi et à écrire « Interface prête. » dans le statut.
+  - **Ma réponse** : « ok »
 - La grille (✔ ou ✘ et un mot, pour « vague » puis « structuré ») :
-- Une phrase : entre les deux résultats, ce qui a le plus changé, c'est… parce que la partie… de mon prompt disait…
-- Difficulté qui reste :
+
+| Critère | Prompt vague | Prompt structuré |
+|---|---|---|
+| La page s'affiche sans erreur (F12, onglet Console) | ✔ Aucun warning ni erreur JS | ✔ Parfait, console propre |
+| Formulaire, liste et statut sont là, avec les quatre identifiants | ✘ Présents mais manque la contrainte maxlength="200" du cahier | ✔ form#chat-form, textarea#message (maxlength 200), ul#messages, p#status |
+| Seuls les trois fichiers autorisés ont changé (`git status -- atelier`) | ✔ Exactement index.html, styles.css et app.js | ✔ Exactement index.html, styles.css et app.js |
+| `npm test` reste vert | ✔ 9 tests passés | ✔ 9 tests passés |
+| Aucune bibliothèque, aucune adresse `https://` | ✔ Pur vanilla local | ✔ Pur vanilla local |
+| Vous savez expliquer chaque partie de la page en une phrase | ✘ Non, l'agent a improvisé la logique d'ajout dynamique et de validation | ✔ Oui, squelette minimaliste strict et maîtrisé |
+
+- Une phrase : entre les deux résultats, ce qui a le plus changé, c'est la maîtrise du périmètre et le respect strict du critère d'arrêt (aucun code superflu d'ajout de message), parce que la partie CRITÈRE D'ARRÊT de mon prompt disait « app.js empêche seulement le rechargement de la page à l'envoi et écrit alors "Interface prête." dans le statut ; il n'ajoute aucun message à la liste » et que CONTRAINTES imposait `maxlength="200"`.
+- Difficulté qui reste : Aucune, l'utilisation conjointe des hypothèses préalables et du critère d'arrêt a supprimé tout comportement imprévu.
 
 ### J1-07 · 👣 Petits pas — [fiche](checkpoints/J1-07-petits-pas.md)
 
