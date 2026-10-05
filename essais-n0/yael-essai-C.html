@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot – Festival de Musique</title>
+    <style>
+      :root {
+        --bg: #0f0c29;
+        --panel: #1a1633;
+        --accent: #ff3d81;
+        --accent2: #6c5ce7;
+        --text: #f1eaff;
+        --muted: #a99fd0;
+        --bubble-bot: #26204a;
+        --bubble-user: linear-gradient(135deg, #ff3d81, #6c5ce7);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: radial-gradient(1200px 600px at 20% -10%, #2b1c56 0%, var(--bg) 60%);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .app {
+        width: 100%;
+        max-width: 480px;
+        height: 92vh;
+        max-height: 780px;
+        background: var(--panel);
+        border-radius: 22px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      header {
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid #2e2757;
+        background: linear-gradient(120deg, rgba(255,61,129,.15), rgba(108,92,231,.15));
+      }
+      .avatar {
+        width: 46px; height: 46px; border-radius: 50%;
+        background: var(--bubble-user);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 0 18px rgba(255,61,129,.5);
+      }
+      header h1 { font-size: 17px; font-weight: 700; }
+      header .status { font-size: 12px; color: var(--muted); margin-top: 3px; }
+      .status .dot {
+        display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+        background: #2ecc71; margin-right: 5px;
+        box-shadow: 0 0 8px #2ecc71;
+      }
+      #chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+      }
+      #chat::-webkit-scrollbar { width: 6px; }
+      #chat::-webkit-scrollbar-thumb { background: #3a3268; border-radius: 3px; }
+      .msg {
+        max-width: 82%;
+        padding: 11px 15px;
+        border-radius: 16px;
+        font-size: 14.5px;
+        line-height: 1.5;
+        animation: pop .25s ease;
+        white-space: pre-line;
+      }
+      @keyframes pop {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .bot { align-self: flex-start; background: var(--bubble-bot); border-bottom-left-radius: 4px; }
+      .user { align-self: flex-end; background: var(--bubble-user); border-bottom-right-radius: 4px; }
+      .typing { align-self: flex-start; display: flex; gap: 5px; padding: 14px 16px; background: var(--bubble-bot); border-radius: 16px; border-bottom-left-radius: 4px; }
+      .typing span {
+        width: 7px; height: 7px; border-radius: 50%; background: var(--muted);
+        animation: blink 1.2s infinite;
+      }
+      .typing span:nth-child(2) { animation-delay: .2s; }
+      .typing span:nth-child(3) { animation-delay: .4s; }
+      @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+      .chips {
+        padding: 0 20px 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid #443a80;
+        background: rgba(108,92,231,.12);
+        color: var(--text);
+        font-size: 12.5px;
+        padding: 7px 13px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: .2s;
+      }
+      .chip:hover { background: rgba(108,92,231,.35); }
+      form {
+        display: flex;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid #2e2757;
+        background: #15122a;
+      }
+      input {
+        flex: 1;
+        background: #221d45;
+        border: 1px solid #37306b;
+        color: var(--text);
+        border-radius: 24px;
+        padding: 12px 18px;
+        font-size: 14px;
+        outline: none;
+      }
+      input:focus { border-color: var(--accent2); }
+      button.send {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        border: none;
+        background: var(--bubble-user);
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform .15s;
+      }
+      button.send:hover { transform: scale(1.08); }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div class="avatar">🎸</div>
+        <div>
+          <h1>FestiBot – Festival de Musique</h1>
+          <div class="status"><span class="dot"></span>En ligne · répond en quelques secondes</div>
+        </div>
+      </header>
+      <div id="chat"></div>
+      <div class="chips" id="chips"></div>
+      <form id="form">
+        <input id="input" type="text" placeholder="Posez votre question…" autocomplete="off" />
+        <button class="send" type="submit" title="Envoyer">➤</button>
+      </form>
+    </div>
+
+    <script>
+      const CHIPS = ["🎫 Billets", "📅 Dates & horaires", "🎤 Programmation", "📍 Accès", "🏕️ Hébergement", "🥗 Restauration", "🎒 Objets autorisés", "☔ Météo"];
+
+      const RULES = [
+        {
+          kw: ["billet", "ticket", "prix", "tarif", "acheter", "pass", "payer", "coût"],
+          a: "🎫 Billetterie :\n• Pass 1 jour : 59 €\n• Pass 3 jours : 129 €\n• Pass VIP (accès backstage + zones premium) : 249 €\n\nAchat en ligne sur le site officiel du festival ou à l'entrée (majoration de 5 €, sous réserve de disponibilité). Les moins de 12 ans entrent gratuitement accompagnés d'un adulte."
+        },
+        {
+          kw: ["date", "quand", "horaire", "heure", "calendrier", "jour"],
+          a: "📅 Dates & horaires :\nLe festival a lieu du vendredi 12 au dimanche 14 juin 2026.\n\n• Vendredi : 14h00 – 01h00\n• Samedi : 12h00 – 02h00\n• Dimanche : 12h00 – 23h30\n\nLes portes ferment à 22h00 pour les nouveaux arrivants."
+        },
+        {
+          kw: ["programmation", "artiste", "concert", "scène", "line-up", "lineup", "musique", "groupe", "chanteur", "joue"],
+          a: "🎤 Programmation 2026 (extrait) :\n• Vendredi : Daft Tribute, Les Étoiles de Nuit, Électrowave Live\n• Samedi : Solar System (tête d'affiche), Rock Avenue, DJ Nova\n• Dimanche : Acoustic Souls, La Grande Fanfare, Midnight Jazz Trio\n\n4 scènes : Main Stage, Scène Électro, Scène Découverte et l'Esplanade Acoustique. Le programme détaillé horaire par scène est dans l'application du festival."
+        },
+        {
+          kw: ["accès", "aller", "venir", "transport", "parking", "voiture", "train", "bus", "adresse", "lieu", "situer", "où"],
+          a: "📍 Accès :\nLe site se trouve au Parc des Trois Rivières, à 10 min du centre-ville.\n\n• Navettes gratuites toutes les 15 min depuis la gare (12h–02h)\n• Tram ligne B, arrêt « Festival »\n• Parking : 10 €/jour, formule covoiturage à tarif réduit\n• Piste cyclable sécurisée + parc à vélos gratuit\n\nZéro voiture sur le site lui-même : navettes internes électriques."
+        },
+        {
+          kw: ["dormir", "hébergement", "camping", "hôtel", "hôtel", "loger", "nuit", "tente"],
+          a: "🏕️ Hébergement :\n• Camping du festival : 25 €/nuit (douches chaudes, bornes de recharge)\n• Emplacements VIP avec tente déjà montée : 90 €/nuit\n• Hôtels partenaires à 15 min : à partir de 65 €/nuit avec le code FESTI2026\n\nLe camping ouvre le jeudi 11 juin à 12h00."
+        },
+        {
+          kw: ["manger", "boire", "restauration", "food", "food truck", "restaurant", "végétarien", "végétalien", "vegan", "végé", "boisson"],
+          a: "🥗 Restauration :\nPlus de 40 food trucks sur place : burgers, cuisine du monde, pizzas au feu de bois, et une large offre végétarienne/végétalienne.\n\n• Eau potable gratuite (fontaines partout sur le site)\n• Menus végé : 8–13 €\n• Paiement sans contact et cashless acceptés"
+        },
+        {
+          kw: ["objet", "interdit", "autorisé", "apporter", "sac", "interdiction", "caméra", "bouteille"],
+          a: "🎒 Objets autorisés / interdits :\n✅ Autorisés : petite gourde vide, crème solaire, casquette, appareil photo compact.\n❌ Interdits : bouteilles et verres en verre, parapluies pointus, drones, feux, substances illicites, caméras professionnelles.\n\nSacs jusqu'à 20×20 cm autorisés sans fouille approfondie."
+        },
+        {
+          kw: ["météo", "pluie", "soleil", "température", "chaud", "froid"],
+          a: "☔ Météo & équipement :\nLe festival se déroule en juin, à l'extérieur. Prévoyez :\n• Crème solaire et chapeau (l'après-midi)\n• K-way ou poncho (au cas où)\n• Chaussures confortables, quitte à salir !\n\nLes principales scènes sont couvertes, le festival a lieu quel que soit le temps."
+        },
+        {
+          kw: ["accessibilité", "handicap", "pmr", "fauteuil", "pmr", "validité"],
+          a: "♿ Accessibilité :\nLe site est 100 % accessible : plateformes dédiées devant les scènes, circuits adaptés, sanitaires PMR. L'accompagnateur bénéficie d'une entrée gratuite. Le parking PMR se réserve à l'achat du billet."
+        },
+        {
+          kw: ["enfant", "enfant", "famille", "kid", "mineur", "ados", "âge"],
+          a: "👨‍👩‍👧 Enfants & familles :\nLes moins de 12 ans entrent gratuitement accompagnés d'un adulte. Un espace famille avec activités pour enfants est ouvert de 12h à 19h, et les concerts de l'Esplanade Acoustique sont pensés pour tous les âges."
+        },
+        {
+          kw: ["sécurité", "secours", "premiers soins", "perdu", "objets trouvés", "urgence"],
+          a: "🚑 Sécurité :\nDeux postes de secours ouverts 24h/24, équipe de sécurité présente en continu, consignes et objets trouvés à l'accueil principal (près de l'entrée Est). En cas d'urgence : appelez le 112 ou le personnel badge « SÉCURITÉ »."
+        },
+        {
+          kw: ["annuler", "remboursement", "covid", "échange", "revendre"],
+          a: "💸 Conditions :\nBillets échangeables gratuitement jusqu'au 1er juin. Remboursement uniquement en cas d'annulation du festival. Revente sécurisée possible via la billetterie officielle (ne jamais acheter sur les réseaux sociaux)."
+        },
+        {
+          kw: ["contact", "téléphone", "mail", "email", "joindre", "question humaine", "service client"],
+          a: "📬 Contact :\n• Email : contact@festimusique.fr\n• Téléphone : +33 1 23 45 67 89 (9h–18h)\n• Réseaux sociaux : @festimusique\n\nL'équipe répond en moins de 24h, et sur place à l'accueil principal 24h/24."
+        },
+        {
+          kw: ["bonjour", "salut", "coucou", "hello", "hey", "yo", "wesh"],
+          a: "Salut ! 🎶 Je suis FestiBot, l'assistant du Festival de Musique. Demandez-moi tout : billets, programmation, accès, hébergement… Comment puis-je vous aider ?"
+        },
+        {
+          kw: ["merci", "thanks", "cool", "super", "génial", "parfait"],
+          a: "Avec plaisir ! 🎵 Si vous avez d'autres questions avant le festival, je suis là. Bonne journée (et à bientôt sous le soleil !) ☀️"
+        },
+        {
+          kw: ["au revoir", "bye", "ciao", "à plus", "adieu"],
+          a: "À bientôt ! 🎸 Rendez-vous du 12 au 14 juin 2026 pour trois jours de musique inoubliables. Ciao !"
+        }
+      ];
+
+      const chat = document.getElementById("chat");
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const chipsBox = document.getElementById("chips");
+
+      function scrollDown() {
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function addMsg(text, who) {
+        const d = document.createElement("div");
+        d.className = "msg " + who;
+        d.textContent = text;
+        chat.appendChild(d);
+        scrollDown();
+      }
+
+      function showTyping() {
+        const t = document.createElement("div");
+        t.className = "typing";
+        t.id = "typing";
+        t.innerHTML = "<span></span><span></span><span></span>";
+        chat.appendChild(t);
+        scrollDown();
+      }
+
+      function removeTyping() {
+        const t = document.getElementById("typing");
+        if (t) t.remove();
+      }
+
+      function normalize(s) {
+        return s.toLowerCase()
+          .replace(/[éèêë]/g, "e").replace(/[àâä]/g, "a")
+          .replace(/[ùûü]/g, "u").replace(/[ôö]/g, "o")
+          .replace(/[îï]/g, "i").replace(/ç/g, "c")
+          .replace(/[^a-z0-9 ]/g, " ");
+      }
+
+      function answer(q) {
+        const n = normalize(q);
+        let best = null;
+        let bestScore = 0;
+        for (const rule of RULES) {
+          let score = 0;
+          for (const k of rule.kw) {
+            if (n.includes(k)) score += k.length;
+          }
+          if (score > bestScore) { bestScore = score; best = rule; }
+        }
+        return best ? best.a : null;
+      }
+
+      function fallback() {
+        const opts = [
+          "programmes", "billets", "dates", "accès", "hébergement", "restauration"
+        ];
+        return "Hmm, je n'ai pas bien compris votre demande 🤔\nJe peux vous renseigner sur : 🎫 billets · 📅 dates · 🎤 programmation · 📍 accès · 🏕️ hébergement · 🥗 restauration · 🎒 objets autorisés · ☔ météo · ♿ accessibilité · 🚑 sécurité · 📬 contact.\n\nQue souhaitez-vous savoir ?";
+      }
+
+      async function botReply(q) {
+        showTyping();
+        await new Promise(r => setTimeout(r, 600 + Math.random() * 700));
+        removeTyping();
+        addMsg(answer(q) || fallback(), "bot");
+      }
+
+      async function handle(q) {
+        addMsg(q, "user");
+        input.value = "";
+        await botReply(q);
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const q = input.value.trim();
+        if (q) handle(q);
+      });
+
+      CHIPS.forEach(c => {
+        const b = document.createElement("button");
+        b.className = "chip";
+        b.textContent = c;
+        b.onclick = () => handle(c);
+        chipsBox.appendChild(b);
+      });
+
+      addMsg("Bonjour et bienvenue ! 🎶 Je suis FestiBot, l'assistant officiel du Festival de Musique 2026. Posez-moi vos questions sur les billets, la programmation, l'accès au site… ou touchez une suggestion ci-dessous.", "bot");
+    </script>
+  </body>
+</html>

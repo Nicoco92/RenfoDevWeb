@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Assistant du Festival de Musique</title>
+<style>
+  :root { font-family: "Segoe UI", system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: linear-gradient(160deg, #1a0533, #2d1b69 55%, #0d0221);
+    color: #f3f0ff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  header { text-align: center; margin-bottom: 14px; }
+  header h1 { font-size: 1.5rem; letter-spacing: .5px; }
+  header h1 span {
+    background: linear-gradient(90deg, #ff4ecd, #ffb347);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header p { color: #b9a8e8; font-size: .9rem; margin-top: 4px; }
+  #chat {
+    width: 100%; max-width: 640px; flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    display: flex; flex-direction: column;
+    min-height: 420px; max-height: 75vh;
+    backdrop-filter: blur(6px);
+  }
+  #messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; line-height: 1.45; font-size: .95rem; white-space: pre-line; animation: pop .18s ease-out; }
+  @keyframes pop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .bot { align-self: flex-start; background: rgba(255,255,255,.1); border-bottom-left-radius: 4px; }
+  .user { align-self: flex-end; background: linear-gradient(90deg, #7b2ff7, #ff4ecd); border-bottom-right-radius: 4px; }
+  .msg strong { color: #ffd166; }
+  #quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 10px; }
+  .chip {
+    border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.05);
+    color: #efe9ff; border-radius: 999px; padding: 6px 12px;
+    font-size: .82rem; cursor: pointer; transition: background .15s;
+  }
+  .chip:hover { background: rgba(255,78,205,.3); }
+  #inputBar { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid rgba(255,255,255,.12); }
+  #userInput {
+    flex: 1; border: none; border-radius: 10px; padding: 10px 14px;
+    background: rgba(255,255,255,.1); color: #fff; font-size: .95rem; outline: none;
+  }
+  #userInput::placeholder { color: #9d8cc9; }
+  #sendBtn {
+    border: none; border-radius: 10px; padding: 10px 18px; font-weight: 600;
+    background: linear-gradient(90deg, #7b2ff7, #ff4ecd); color: #fff; cursor: pointer;
+  }
+  #sendBtn:disabled { opacity: .5; cursor: default; }
+  footer { color: #8a79bd; font-size: .75rem; margin-top: 10px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎵 Assistant du <span>Festival de Musique</span></h1>
+  <p>Posez vos questions : programmation, billets, accès, bénévoles…</p>
+</header>
+<div id="chat">
+  <div id="messages"></div>
+  <div id="quick"></div>
+  <div id="inputBar">
+    <input id="userInput" placeholder="Écrivez votre message…" autocomplete="off" />
+    <button id="sendBtn">Envoyer</button>
+  </div>
+</div>
+<footer>Assistant informatif — les réponses sont basées sur la fiche du festival.</footer>
+
+<script>
+const FESTIVAL = {
+  nom: "Festival Son & Lumières",
+  dates: "du 12 au 15 juillet 2026",
+  lieu: "Parc des Expositions, 48 route des Pins, Lyon",
+  horaires: "ouvre ses portes à 14h ; les concerts commencent à 18h et la dernière scène se termine vers 1h du matin",
+  prix: "Pass 1 jour : 45 € · Pass 4 jours : 140 € · gratuit pour les moins de 12 ans accompagnés",
+  programmation: [
+    ["Vendredi 12", "Électro nuit — DJ Solstice, Nova Kid, Le Cirque des Basses"],
+    ["Samedi 13", "Rock & Pop — Les Échos, Marianne Vale, The Foxholes"],
+    ["Dimanche 14", "Scène world — Fatou & les Tambours, Alma Céleste, Trio Maia"],
+    ["Lundi 15", "Clôture classique — Orchestre du Rhône, Chœur Aurora"]
+  ],
+  acces: "Tram T1 arrêt « Parc Expo », navettes gratuites toutes les 20 min depuis la gare Part-Dieu dès 16h. Parking de 2000 places à 10 €/jour. Piste vélo sécurisée et parc à vélos gratuit à l'entrée",
+  camping: "Un camping est disponible sur place (tente : 12 €/nuit, emplacement van : 20 €/nuit), avec douches, points d'eau et recharge de téléphones. Ouverture 24h/24 pendant tout le festival",
+  restos: "Une trentaine de stands de nourriture (végétarien, vegan, sans gluten, cuisine du monde) et 5 points d'eau gratuits — pensez à votre gourde !",
+  billets: "Billetterie en ligne sur le site officiel du festival et sur place (avec 2 € de frais). Tarif réduit pour les étudiants et demandeurs d'emploi sur présentation d'un justificatif. Les pass 4 jours sont limités à 8000 exemplaires",
+  benevoles: "Environ 400 bénévoles sont recherchés : accueil, bar, sécurité, accès artistes… 6h de travail par jour contre un pass 4 jours gratuit, repas et t-shirt. Candidature via le formulaire en ligne du festival",
+  accessibilite: "Le site est entièrement accessible PMR : plateformes surélevées devant chaque scène, sanitaires adaptés, navettes accessibles. Accompagnateurs entrant gratuitement sur présentation d'une carte d'invalidité",
+  objets: "Interdits : bouteilles en verre, parapluies, drones, appareils photo pro. Autorisés : gourdes vides, sacs jusqu'à 20 L, pique-nique dans la zone dédiée",
+  enfants: "Le festival est familial le dimanche : espace enfants gratuit (ateliers musique, mini-scène). Les moins de 12 ans entrent gratuitement accompagnés d'un adulte",
+  contact: "Par e-mail : contact@son-et-lumieres.fr · Par téléphone au 04 78 00 12 34 (du lundi au vendredi, 9h–18h) · Sur les réseaux sociaux @sonetlumieres"
+};
+
+const rules = [
+  { k:["billet","prix","tarif","acheter","pass","coût","cout","payer","place"], r:() => `🎟️ Voici la billetterie :\n\n• Pass 1 jour : 45 €\n• Pass 4 jours : 140 €\n• Moins de 12 ans : gratuit\n• Tarif réduit étudiants / demandeurs d'emploi\n\n${FESTIVAL.billets}` },
+  { k:["programme","programmation","scene","scène","concert","line-up","lineup","artistes","joue","affiche"], r:() => "🎶 La programmation " + FESTIVAL.dates + " :\n\n" + FESTIVAL.programmation.map(j => "• " + j[0] + " : " + j[1]).join("\n") + "\n\nUn pass 4 jours vous permet de tout voir !" },
+  { k:["date","quand","horaire","heure","ouvre","commence","fin"], r:() => "📅 Le festival a lieu " + FESTIVAL.dates + " au " + FESTIVAL.lieu + ".\nLe site " + FESTIVAL.horaires + "." },
+  { k:["acces","accès","venir","tram","metro","métro","bus","voiture","parking","garer","navette","train","gare","velo","vélo"], r:() => "🚋 Pour venir :\n\n" + FESTIVAL.acces + "." },
+  { k:["camping","dormir","nuit","hebergement","hébergement","hotel","hôtel","tente"], r:() => "⛺ " + FESTIVAL.camping + ". Des hôtels partenaires proposent aussi des tarif préférentiels avec le code FEST26." },
+  { k:["manger","boire","resto","restaurant","nourriture","food","vegetarien","végétarien","vegan","sans gluten","eau"], r:() => "🍜 " + FESTIVAL.restos + "." },
+  { k:["benevole","bénévole","volontaire","travailler","candidater","aide"], r:() => "🙌 " + FESTIVAL.benevoles + "." },
+  { k:["pmr","handicap","accessible","accessibilite","accessibilité","fauteuil","mobilite","mobilité"], r:() => "♿ " + FESTIVAL.accessibilite + "." },
+  { k:["interdit","autorise","autorisé","sac","objets","apporter","cameras","bouteille","drohne","drone","photo"], r:() => "🎒 " + FESTIVAL.objets + "." },
+  { k:["enfant","kids","famille","famillial","bebe","bébé","ado"], r:() => "👨‍👩‍👧 " + FESTIVAL.enfants + "." },
+  { k:["contact","mail","e-mail","email","telephone","téléphone","joindre","question","reseau","réseau","instagram"], r:() => "📞 " + FESTIVAL.contact + "." },
+  { k:["meteo","météo","pluie","soleil","température"], r:() => "⛅ Le festival se tient quel que soit le temps : les scènes principales sont couvertes. Prévoyez crème solaire, chapeau et une cape de pluie (les parapluies sont interdits !). Consultez la météo locale quelques jours avant votre venue." },
+  { k:["annuler","rembours","remboursement","revente","revendre","echange","échange"], r:() => "↩️ Les billets sont remboursables (frais de 5 €) jusqu'à 15 jours avant le festival. La revente entre particuliers est possible via la plateforme d'échange officielle du site du festival, pour éviter les contrefaçons." },
+  { k:["ou","site","adresse","localisation","carte","plan"], r:() => "📍 Le festival se déroule au " + FESTIVAL.lieu + ". Un plan du site avec toutes les scènes, stands et sanitaires est remis à l'entrée et disponible sur l'application mobile du festival." },
+  { k:["bonjour","salut","hello","hey","coucou","yo"], r:() => "Bonjour et bienvenue ! 🎪 Je suis l'assistant du " + FESTIVAL.nom + ". Je peux vous renseigner sur la programmation, les billets, l'accès au site, le camping, la nourriture et bien plus. Que souhaitez-vous savoir ?" },
+  { k:["merci","thanks","super","cool","genial","génial"], r:() => "Avec plaisir ! 🎉 N'hésitez pas si vous avez d'autres questions sur le festival." },
+  { k:["revoir","bye","au revoir","aurevoir","ciao"], r:() => "À bientôt au " + FESTIVAL.nom + " ! 🎵 Bonne journée !" }
+];
+
+const chips = ["Programmation 🎶", "Billets 🎟️", "Accès 🚋", "Camping ⛺", "Manger 🍜", "Devenir bénévole 🙌", "Contact 📞"];
+
+const msgs = document.getElementById("messages");
+const quick = document.getElementById("quick");
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function addMsg(text, who) {
+  const d = document.createElement("div");
+  d.className = "msg " + who;
+  d.textContent = text;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function reply(q) {
+  const norm = " " + q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") + " ";
+  let best = null, bestScore = 0;
+  for (const rule of rules) {
+    const score = rule.k.reduce((s, kw) => {
+      const nk = kw.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      return s + (norm.includes(" " + nk) || norm.includes(nk + " ") || norm.includes(" " + nk + " ") ? 1 : 0) * Math.min(2, nk.length / 5);
+    }, 0);
+    if (score > bestScore) { bestScore = score; best = rule; }
+  }
+  if (best && bestScore >= 1) return best.r();
+  return "Hmm, je n'ai pas de réponse certaine à cette question 😅.\nVous pouvez reformuler, ou essayer : « programmation », « billets », « accès », « camping », « bénévoles ».\nPour toute autre demande : " + FESTIVAL.contact;
+}
+
+function send(text) {
+  if (!text.trim()) return;
+  addMsg(text, "user");
+  input.value = "";
+  sendBtn.disabled = true;
+  const chipsBox = document.getElementById("quick");
+  setTimeout(() => {
+    addMsg(reply(text), "bot");
+    sendBtn.disabled = false;
+    input.focus();
+  }, 350);
+}
+
+input.addEventListener("keydown", e => { if (e.key === "Enter") send(input.value); });
+sendBtn.addEventListener("click", () => send(input.value));
+chips.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = c;
+  b.addEventListener("click", () => send(c));
+  quick.appendChild(b);
+});
+
+addMsg("Bienvenue au " + FESTIVAL.nom + " ! 🎪 Je suis votre assistant. Posez-moi vos questions sur la programmation, les billets, l'accès au site ou tout autre sujet.", "bot");
+</script>
+</body>
+</html>

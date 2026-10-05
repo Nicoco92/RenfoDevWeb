@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chatbot – Festival de Musique</title>
+<style>
+  :root {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #1a0533 0%, #2d0a4e 45%, #0d0221 100%);
+    color: #f3eaff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px;
+  }
+  header { text-align: center; margin-bottom: 16px; }
+  header h1 {
+    margin: 0;
+    font-size: 1.7rem;
+    background: linear-gradient(90deg, #ff6ec7, #ffb347, #7af7ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: .5px;
+  }
+  header p { margin: 6px 0 0; color: #b9a3d9; font-size: .95rem; }
+  #chat {
+    width: 100%;
+    max-width: 680px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    backdrop-filter: blur(6px);
+    overflow: hidden;
+    min-height: 60vh;
+  }
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    line-height: 1.45;
+    font-size: .95rem;
+    white-space: pre-line;
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .bot {
+    align-self: flex-start;
+    background: #2a1a4a;
+    border: 1px solid #4b2d7a;
+    border-bottom-left-radius: 4px;
+  }
+  .user {
+    align-self: flex-end;
+    background: linear-gradient(90deg, #7b2ff7, #b620e0);
+    border-bottom-right-radius: 4px;
+  }
+  .msg b { color: #ffcf7a; }
+  #suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 10px;
+  }
+  .chip {
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #e8dcff;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .chip:hover { background: rgba(255,255,255,.2); }
+  form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.18);
+  }
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: .95rem;
+    background: rgba(255,255,255,.1);
+    color: #fff;
+  }
+  input::placeholder { color: #9d8bbf; }
+  button.send {
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-size: .95rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, #ff6ec7, #b620e0);
+    cursor: pointer;
+  }
+  button.send:hover { filter: brightness(1.15); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎶 SonicWave Festival</h1>
+  <p>Ton assistant officiel — pose-moi tes questions !</p>
+</header>
+
+<div id="chat">
+  <div id="messages"></div>
+  <div id="suggestions"></div>
+  <form id="form" autocomplete="off">
+    <input id="input" type="text" placeholder="Écris ta question…" />
+    <button class="send" type="submit">Envoyer</button>
+  </form>
+</div>
+
+<script>
+(function () {
+  var messages = document.getElementById('messages');
+  var suggestions = document.getElementById('suggestions');
+  var form = document.getElementById('form');
+  var input = document.getElementById('input');
+
+  function add(text, who) {
+    var div = document.createElement('div');
+    div.className = 'msg ' + who;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function botReply(text) {
+    var typing = document.createElement('div');
+    typing.className = 'msg bot';
+    typing.textContent = '…';
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(function () {
+      typing.textContent = text;
+      messages.scrollTop = messages.scrollHeight;
+    }, 500 + Math.random() * 400);
+  }
+
+  // ---- Base de connaissances du festival (mot-clés -> réponse) ----
+  var KB = [
+    { kw: ['billet', 'ticket', 'prix', 'tarif', 'pass', 'acheter', 'coûte'],
+      a: "🎫 <b>Billetterie</b>\n• Pass 1 jour : 65 €\n• Pass 3 jours : 160 €\n• VIP (accès backstage + buvette) : 320 €\nEn vente sur notre site et à l'entrée selon disponibilité. -18 ans : réduction de 30 % !" },
+    { kw: ['date', 'quand', 'horaire', 'jour', 'calendrier', 'programme', 'programmation', 'line-up', 'lineup', 'artiste', 'concert', 'scène'],
+      a: "📅 <b>Programme</b>\nLe festival a lieu du <b>12 au 14 juillet 2027</b>, de 14h à 2h du matin.\n• Vendredi : électro & hip-hop (scène Nova)\n• Samedi : rock & pop (scène Eclipse)\n• Dimanche : jazz, soul & world music (scène Riviera)\nLe line-up complet est dévoilé chaque mois d'avril !" },
+    { kw: ['lieu', 'où', 'adresse', 'accès', 'parking', 'transport', 'venir', 'train', 'bus', 'voiture'],
+      a: "📍 <b>Accès</b>\nLe festival se déroule au <b>Parc des Étoiles, 34000 Montpellier</b>.\n🚆 Gare à 10 min à pied\n🚌 Navettes gratuites toutes les 20 min depuis le centre-ville\n🅿️ Parking à 10 €/jour (places limitées : venez en transports !)" },
+    { kw: ['camping', 'dormir', 'hôtel', 'hébergement', 'nuit', 'logement'],
+      a: "🏕️ <b>Hébergement</b>\nUn camping est disponible sur place à 15 €/nuit (douches chaudes incluses), ouvert du 11 au 15 juillet. Réservation recommandée ! Sinon, hôtels partenaires au centre-ville avec -20 % sur présentation du billet." },
+    { kw: ['nourriture', 'manger', 'boire', 'restauration', 'food', 'végétarien', 'végan', 'boisson', 'alcool'],
+      a: "🍔 <b>Restauration</b>\nPlus de 30 stands : food trucks, cuisine du monde, options végétariennes et véganes partout. Bières et cocktails sur présentation d'une pièce d'identité (interdit aux -18 ans). Gourdes rechargeables : fontaines d'eau gratuites !" },
+    { kw: ['enfant', 'famille', 'âge', 'mineur', 'accès handicapé', 'pmr', 'handicap', 'poussette'],
+      a: "👨‍👩‍👧 <b>Familles & accessibilité</b>\nEntrée gratuite pour les moins de 10 ans (accompagnés d'un adulte). Espace enfants avec animations de 14h à 19h. Site entièrement accessible PMR, plateforme dédiée devant les scènes, accompagnateurs bénéficient d'une place gratuite." },
+    { kw: ['météo', 'pluie', 'temps', 'soleil'],
+      a: "⛅ <b>Météo</b>\nLe festival se maintient par toutes les météos : les scènes principales sont couvertes. Pense à apporter une cape de pluie (parapluies interdits devant les scènes) et de la crème solaire !" },
+    { kw: ['objet', 'interdit', 'sécurité', 'sac', 'apporter', 'autorisé'],
+      a: "🔒 <b>Sécurité</b>\nInterdits : bouteilles en verre, parapluies, drones, objets dangereux. Autorisés : petits sacs, gourdes vides, capes de pluie. Fouilles à l'entrée — pensez à arriver en avance." },
+    { kw: ['bénévole', 'volontaire', 'travailler', 'staff', 'job'],
+      a: "🙌 <b>Bénévoles</b>\nOn recrute 400 bénévoles ! 2 équipes de 6h par jour contre un pass 3 jours gratuit + repas. Candidatures en ligne jusqu'au 1er juin 2027." },
+    { kw: ['contact', 'téléphone', 'mail', 'email', 'réclamation', 'question'],
+      a: "📩 <b>Contact</b>\n✉️ contact@sonicwave-festival.fr\n📞 04 67 XX XX XX (9h–18h)\nRéponse sous 48h ouvrées." },
+    { kw: ['annulation', 'rembours', 'covid', 'épidémie'],
+      a: "💳 <b>Annulation</b>\nEn cas d'annulation du festival, remboursement intégral sous 30 jours. En cas d'empêchement personnel, ton billet peut être revendu via notre plateforme d'échange officielle." }
+  ];
+
+  var DEFAULT = "Hmm, je n'ai pas la réponse à ça 😅 Voici ce que je peux t'expliquer : billets, programme, accès, camping, restauration, familles, sécurité, bénévolat ou contact. Que veux-tu savoir ?";
+  var GREET = ['salut', 'bonjour', 'bonsoir', 'hello', 'coucou', 'hey', 'yo'];
+
+  function answer(q) {
+    var s = ' ' + q.toLowerCase() + ' ';
+    for (var i = 0; i < GREET.length; i++) {
+      if (s.indexOf(' ' + GREET[i] + ' ') !== -1 || s.indexOf(GREET[i] + ' !') !== -1 || s.indexOf(GREET[i] + ' festival') !== -1)
+        return "Salut et bienvenue au SonicWave Festival ! 🎵 Ask-moi ce que tu veux : billets, programme, accès, camping…";
+    }
+    for (var j = 0; j < KB.length; j++) {
+      for (var k = 0; k < KB[j].kw.length; k++) {
+        if (s.indexOf(KB[j].kw[k]) !== -1) return KB[j].a;
+      }
+    }
+    if (s.indexOf('merci') !== -1) return "Avec plaisir ! 🎉 Bon festival !";
+    if (s.indexOf('?') !== -1 && s.trim().length < 6) return "Pose ta question complète et je ferai de mon mieux 😉";
+    return DEFAULT;
+  }
+
+  // Permettre le HTML gras dans les réponses
+  function botReplyHTML(html) {
+    var typing = document.createElement('div');
+    typing.className = 'msg bot';
+    typing.textContent = '…';
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(function () {
+      typing.innerHTML = html;
+      messages.scrollTop = messages.scrollHeight;
+    }, 500 + Math.random() * 400);
+  }
+
+  var CHIPS = ['Quels sont les prix des billets ?', 'C\'est quand et où ?', 'Où dormir ?', 'Que manger sur place ?', 'Comment devenir bénévole ?'];
+
+  CHIPS.forEach(function (c) {
+    var chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.textContent = c;
+    chip.onclick = function () { send(c); };
+    suggestions.appendChild(chip);
+  });
+
+  function send(text) {
+    add(text, 'user');
+    input.value = '';
+    var reply = answer(text);
+    if (reply.indexOf('<b>') !== -1) botReplyHTML(reply); else botReply(reply);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = input.value.trim();
+    if (!v) return;
+    send(v);
+  });
+
+  botReply("Salut, je suis Wavey, ton assistant du SonicWave Festival ! 🎶\nPose-moi tes questions sur les billets, le programme, l'accès, le camping… ou clique sur une suggestion ci-dessous.");
+})();
+</script>
+</body>
+</html>
