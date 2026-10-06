@@ -541,3 +541,119 @@ En une seule page HTML que j'ouvre dans mon navigateur. Je veux un chatbot pour 
 ## Phrase de conclusion :
 Ces écarts nous autorisent à faire confiance au modèle pour produire rapidement une maquette visuelle séduisante et pertinente sur le thème, mais ils nous interdisent formellement de supposer que l'implémentation technique, les fonctionnalités de robustesse (gestion des erreurs, mémoire) ou l'algorithme sous-jacent seront stables et reproductibles d'une exécution à l'autre. 
 
+# J1-05 · dsh en main
+
+## Preuve :
+- `dsh --version` : `0.1.5-rc.2`
+- Espace de travail : `/Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier`
+- Modèle sélectionné : `capweb-ia`
+- Mode de permission : `Read Only` (vérifié avec `/permission`)
+- `git status -- atelier` : « nothing to commit, working tree clean » (aucun fichier modifié)
+- Clé API : stockée uniquement dans `~/dsh-capweb/.credentials.yaml` (chmod 600), aucune fuite dans le projet.
+
+## Consigne envoyée :
+> « Liste les fichiers de ce dossier et dis ce que fait chacun. Donne le chemin de chaque fichier. Si tu ne sais pas ce que fait un fichier, écris « je ne sais pas ». N'écris rien et ne modifie rien. »
+
+## Réponse de l'agent :
+```text
+Voici les fichiers du dossier atelier — lecture seule, rien n'a été modifié :
+Dossier : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/README.md Ce que fait ce fichier : documentation de l'atelier J1 — explique comment démarrer (npm start), vérifier (npm test, npm run verify), et le rôle des checkpoints.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/package.json Ce que fait ce fichier : manifeste npm du projet — déclare le nom, le type module ES, Node >=24.20, les scripts (start, test, lint, test:browser, verify) et les devDependencies (eslint, playwright, axe-core).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/package-lock.json Ce que fait ce fichier : verrouille les versions exactes des dépendances npm pour une installation reproductible (npm ci).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/.gitignore Ce que fait ce fichier : liste les dossiers ignorés par Git (node_modules/, dist/, preuves/, test-results/, playwright-report/, coverage/).
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/eslint.config.js Ce que fait ce fichier : configuration ESLint (flat config) — définit les règles pédagogiques (no-unused-vars, eqeqeq, no-var, prefer-const) et les globales navigateur vs Node selon le dossier.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/playwright.config.js Ce que fait ce fichier : configuration Playwright — test Chromium headless sur http://127.0.0.1:4173/, dossier de tests ./browser, démarre automatiquement le serveur via node server/start.js.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/server/app.js Ce que fait ce fichier : crée le serveur HTTP (createApp) — sert uniquement la liste explicite /, /index.html, /styles.css, /js/app.js+ /version.json, gère GET/HEAD, 404/405, types MIME, sans fuite de fichiers privés.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/server/start.js Ce que fait ce fichier : point d'entrée du serveur — fixe le dossier public, valide le PORT (défaut 3000), écoute sur 127.0.0.1, gère l'arrêt propre sur SIGINT/SIGTERM.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/index.html Ce que fait ce fichier : page d'accueil HTML — structure avec <main>, titre Cap Web, paragraphe, zone #status, charge styles.css et js/app.js.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/styles.css Ce que fait ce fichier : feuille de style minimale — police system-ui, marges, couleur, centrage du main.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/public/js/app.js Ce que fait ce fichier : script navigateur — affiche le texte « Votre point de départ est prêt. » dans l'élément #status.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/tests/server.test.js Ce que fait ce fichier : 9 tests serveur Node (node:test) — vérifie GET/HEAD, MIME, /version.json, 404, 405, et non-divulgation des chemins privés et traversals.
+Chemin : /Users/nicolascontrerastibocha/Downloads/cap-web-j1/atelier/browser/depart.spec.js Ce que fait ce fichier : 1 test navigateur Playwright — vérifie que la page charge le titre Cap Web, que le status existe, et qu'il n'y a aucune erreur JavaScript.
+```
+
+## Vérification de l'agent :
+- `README.md` : **Existe**, description **juste** (documente l'atelier J1, le lancement et les tests).
+- `package.json` : **Existe**, description **juste** (manifeste npm, configuration ES module, scripts et outils dev).
+- `package-lock.json` : **Existe**, description **juste** (arbre des dépendances figé).
+- `.gitignore` : **Existe**, description **juste** (liste des exclusions de suivi git).
+- `eslint.config.js` : **Existe**, description **juste** (règles de linting JavaScript modernes).
+- `playwright.config.js` : **Existe**, description **juste** (configuration des tests E2E navigateur).
+- `server/app.js` : **Existe**, description **juste** (logique du serveur HTTP et filtrage strict des routes).
+- `server/start.js` : **Existe**, description **juste** (script exécutable lançant le serveur HTTP sur le port 3000).
+- `public/index.html` : **Existe**, description **juste** (page d'accueil sémantique avec main et p#status).
+- `public/styles.css` : **Existe**, description **juste** (feuille de styles CSS sobre).
+- `public/js/app.js` : **Existe**, description **juste** (script client écrivant le statut au chargement).
+- `tests/server.test.js` : **Existe**, description **juste** (tests Node.js du serveur).
+- `browser/depart.spec.js` : **Existe**, description **juste** (test Playwright du rendu de départ).
+- **Fichier non cité** : `carnet.md` (ou `cap-web-j1/README.md`) car situé dans le dossier parent racine, ce qui prouve que l'agent est bien confiné dans son espace de travail `atelier`.
+
+# J1-06 · Anatomie d'un prompt
+
+## Essai 1 : Le prompt vague
+
+- **Prompt envoyé à l'agent** :
+  > « Écris la page de Cap Web : un formulaire, une liste de messages et un statut. »
+
+- **Ce que montre la page (3 lignes d'observation)** :
+  1. Un formulaire vertical avec un label « Votre message », un textarea multi-lignes (« Écrivez ici… ») et un bouton bleu standard « Envoyer ».
+  2. Une section titrée H2 « Messages » avec une liste à puces vide (`<ul id="messages">`).
+  3. Une ligne de statut affichant au départ « Votre point de départ est prêt. », puis réagissant aux soumissions de l'utilisateur.
+
+- **Fichiers modifiés (`git status -- atelier` et `git diff`)** :
+  - `atelier/public/index.html` (+13, -2) : structure HTML basique ajoutée avec form, textarea, bouton, liste et statut. Absence de la limite `maxlength="200"`.
+  - `atelier/public/styles.css` (+8, -1) : grille CSS élémentaire pour espacer formulaire, champs et liste.
+  - `atelier/public/js/app.js` (+22, -1) : gestionnaire d'événement complet codé d'office par l'agent (ajout dynamique de `<li>`, validation champ vide). L'agent a pris des initiatives non demandées.
+
+- **Vérification `npm test`** :
+  - 9 tests serveur passés avec succès (vert).
+
+## Essai 2 : Le prompt structuré (en six parties)
+
+- **Prompt envoyé à l'agent** :
+  ```text
+  RÔLE : Tu es développeur web. Tu écris du HTML, du CSS et du JavaScript sans bibliothèque, pour des débutants.
+  TÂCHE : Écris le squelette de la page de « Cap Web », un assistant sur le Festival de Musique : un formulaire, une liste de messages, une ligne de statut.
+  CONTRAINTES :
+  - Modifie uniquement public/index.html, public/styles.css et public/js/app.js. Le serveur ne sert que ces trois fichiers : n'en crée aucun autre.
+  - Garde ces identifiants : form#chat-form, textarea#message, ul#messages, p#status.
+  - Le champ #message est limité à 200 caractères (maxlength).
+  - Le contenu de la page est dans un main. Un seul h1 (« Cap Web »), un label lié au champ, un bouton « Envoyer », p#status avec role="status", html lang="fr". Aucune bibliothèque, aucune adresse https://.
+  FORMAT DE SORTIE : d'abord la liste de tes hypothèses (cinq au plus), puis tu t'arrêtes. Après mon « ok », tu écris les trois fichiers, puis tu réponds par la liste des fichiers écrits.
+  EXEMPLES ET CONTRE-EXEMPLES : voulu : <button type="submit">Envoyer</button>. Refusé : <div onclick="envoyer()">Envoyer</div> (ce n'est pas un bouton) ; un fichier script.js à côté de app.js (le serveur répondrait 404).
+  CRITÈRE D'ARRÊT : app.js empêche seulement le rechargement de la page à l'envoi et écrit alors « Interface prête. » dans le statut ; il n'ajoute aucun message à la liste. Quand les trois fichiers sont écrits, tu t'arrêtes.
+  ```
+
+- **Hypothèses listées par l'agent (sans rien écrire)** :
+  1. `public/index.html` charge `styles.css` et `js/app.js` sans autre fichier ni bibliothèque.
+  2. Le `main` contient le `h1`, le `form#chat-form`, le `ul#messages` et le `p#status`.
+  3. Le formulaire contient un `label` lié à `textarea#message` (`maxlength` 200) et un `button type="submit"`.
+  4. `p#status` porte `role="status"` et `html lang="fr"`, sans aucune adresse `https://`.
+  5. `app.js` se limite à empêcher le rechargement à l'envoi et à écrire « Interface prête. » dans le statut.
+
+- **Ma validation** : « ok »
+
+- **Ce que montre la page (3 lignes d'observation)** :
+  1. Titre `Cap Web` avec sous-titre `Un assistant sur le Festival de Musique.` dans un `<main>`.
+  2. Formulaire propre avec champ `<textarea id="message" maxlength="200">` et un vrai `<button type="submit">Envoyer</button>`.
+  3. Une liste vide `<ul id="messages">` et une zone `<p id="status" role="status">` affichant « Interface prête. » lors du clic sur Envoyer sans rechargement de page.
+
+- **Fichiers modifiés (`git status -- atelier`)** :
+  - `atelier/public/index.html` (+11, -5) : structure sémantique exacte, respect des contraintes (`maxlength="200"`, IDs stricts).
+  - `atelier/public/styles.css` (+2, -0) : styles minimalistes d'espacement (`form`, `ul`).
+  - `atelier/public/js/app.js` (+7, -1) : gestionnaire d'événement respectant scrupuleusement le critère d'arrêt sans aucun ajout de message.
+
+- **Grille comparative** :
+
+| Critère | Prompt vague | Prompt structuré |
+|---|---|---|
+| La page s'affiche sans erreur (F12, onglet Console) | ✔ Aucun warning ni erreur JS | ✔ Parfait, console propre |
+| Formulaire, liste et statut sont là, avec les 4 identifiants | ✘ Présents mais manque la contrainte maxlength="200" du cahier | ✔ form#chat-form, textarea#message (maxlength 200), ul#messages, p#status |
+| Seuls les trois fichiers autorisés ont changé (`git status`) | ✔ Exactement index.html, styles.css et app.js | ✔ Exactement index.html, styles.css et app.js |
+| `npm test` reste vert | ✔ 9 tests passés | ✔ 9 tests passés |
+| Aucune bibliothèque, aucune adresse `https://` | ✔ 100% vanilla local | ✔ 100% vanilla local |
+| Vous savez expliquer chaque partie de la page en une phrase | ✘ Non, l'agent a improvisé la logique d'ajout dynamique et de validation | ✔ Oui, squelette minimaliste strict et maîtrisé |
+
+- **Phrase de conclusion** :
+  Entre les deux résultats, ce qui a le plus changé, c'est la maîtrise du périmètre et le respect strict du critère d'arrêt (aucun code superflu d'ajout de message), parce que la partie CRITÈRE D'ARRÊT de mon prompt disait « app.js empêche seulement le rechargement de la page à l'envoi et écrit alors "Interface prête." dans le statut ; il n'ajoute aucun message à la liste » et que CONTRAINTES imposait `maxlength="200"`.
